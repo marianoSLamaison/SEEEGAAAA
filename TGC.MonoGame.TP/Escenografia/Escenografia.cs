@@ -1,3 +1,4 @@
+using Control;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -69,52 +70,88 @@ namespace Escenografia
             }
         }
     }
+    /// <summary>
+    /// Esta es la clase que te permite generar las figuras primitivas
+    /// triangulos, cuadrados, circulo, una mesh cuadrada, etc.
+    /// No tenemos un poligono general, solo poligonos regulares. 
+    /// </summary>
     class Primitiva 
     {
-        private readonly GraphicsDevice device;
-        private VertexBuffer vertices;
-        private IndexBuffer indices;
+        private GraphicsDevice device;
+        private short[] indices;
         private Effect effect;
+        private VertexPositionColor[] vertices;
+        private Color color;
+        private int numeroTriangulos;
 
-        public Primitiva(GraphicsDevice device, Effect effect,
-        Vector3 vertice1, Vector3 vertice2, Vector3 vertice3, Vector3 vertice4)
+        public static Primitiva Triangulo(Vector3 vertice1, Vector3 vertice2, Vector3 vertice3)
         {
-            this.effect = effect;
-            this.device = device;
-            Color color = Color.Black;
-            int[] indicesTemp = new int[6];
-            VertexPositionColor[] dataVertices = new VertexPositionColor[4];
-            dataVertices[0] = new VertexPositionColor(vertice1, color);
-            dataVertices[1] = new VertexPositionColor(vertice2, color);
-            dataVertices[2] = new VertexPositionColor(vertice3, color);
-            dataVertices[3] = new VertexPositionColor(vertice4, color);
-
-            indicesTemp[0] = 0;
-            indicesTemp[1] = 1;
-            indicesTemp[1] = 2;
-            indicesTemp[1] = 2;
-            indicesTemp[1] = 3;
-            indicesTemp[1] = 0;
-
-            vertices = new VertexBuffer(device, typeof(VertexPositionColor), dataVertices.Length, BufferUsage.WriteOnly);
-            vertices.SetData(dataVertices);
-            indices = new IndexBuffer(device, IndexElementSize.ThirtyTwoBits, indicesTemp.Length, BufferUsage.WriteOnly);
-            indices.SetData(indicesTemp);
+            Primitiva ret = new Primitiva();
+            ret.vertices = new VertexPositionColor[3];
+            ret.vertices[0] = new VertexPositionColor(vertice1, Color.Black);
+            ret.vertices[1] = new VertexPositionColor(vertice2, Color.Black);
+            ret.vertices[2] = new VertexPositionColor(vertice3, Color.Black);
+            ret.indices = new short[] {0, 1, 2};
+            ret.numeroTriangulos = 1;
+            return ret;
+        }
+        public static Primitiva Cuad(Vector3 vertice1, Vector3 vertice2, Vector3 vertice3, Vector3 vertice4)
+        {
+            Primitiva ret = new Primitiva();
+            ret.vertices = new VertexPositionColor[4];
+            ret.vertices[0] = new VertexPositionColor(vertice1, Color.Black);
+            ret.vertices[1] = new VertexPositionColor(vertice2, Color.Black);
+            ret.vertices[2] = new VertexPositionColor(vertice3, Color.Black);
+            ret.vertices[3] = new VertexPositionColor(vertice4, Color.Black);
+            ret.indices = new short[] { 0, 1, 2, 2, 3, 0 };
+            ret.numeroTriangulos = 2;
+            return ret;
         }
 
-        public void dibujar(Matrix view, Matrix projection, Color color)
+        public static Primitiva RegPoligon(Vector3 centro, int caras, float radio)
         {
-            device.SetVertexBuffer(vertices);
-            device.Indices = indices;
-            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(Vector3.Zero) * Matrix.CreateScale(1000f));
-            effect.Parameters["View"].SetValue(view);
-            effect.Parameters["Projection"].SetValue(projection);
-            effect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            if ( caras < 3 ) throw new Exception("No puedes hacer una figura cerrada con 2 caras rectas.\n");
+            float anguloPorCara = Convert.ToSingle(Math.Tau / caras);
+            Primitiva ret = new Primitiva();
+            int numeroVertices = caras + 1;
+            ret.vertices = new VertexPositionColor[numeroVertices];//uno de mas por el centro
+            ret.indices = new short[caras * 3];//hay 3 indices por cara ( tienes un triangulo por cara)
+            Vector3 vectorDireccion;
+            //creamos los vertices del circulo
+            ret.vertices[0] = new VertexPositionColor(centro, Color.Black);
+            for( int i=1; i < numeroVertices; i++)
+            {
+                vectorDireccion = Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(-anguloPorCara * i)) * radio;
+                ret.vertices[i] = new VertexPositionColor(vectorDireccion + centro, Color.Black);
+            }
+            //cargamos los indices
+            for (int i=0 ; i < caras; i++)
+            {
+                ret.indices[i * 3] = 0;
+                ret.indices[i * 3 + 1] = (short)(i + 1);
+                ret.indices[i * 3 + 2] = (short)(i < (caras - 1) ? i + 2 : 1);
+            }
+            ret.numeroTriangulos = caras;
+            return ret;
+        }
 
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+        public void loadPrimitiva(GraphicsDevice device, Effect effect, Color color)
+        {
+            this.device = device;
+            this.effect = effect;
+            this.color = color;
+        }
+
+        public void dibujar(Camarografo camarografo)
+        {
+            effect.Parameters["Projection"].SetValue(camarografo.getProjectionMatrix());
+            effect.Parameters["View"].SetValue(camarografo.getViewMatrix());
+            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(Vector3.Zero) * Matrix.CreateScale(1000f));
+            effect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2);
+                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertices, 0, 4, indices, 0, numeroTriangulos);
             }
         }
         public void Dispose()

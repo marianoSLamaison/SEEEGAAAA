@@ -7,6 +7,17 @@ using System.Data;
 
 namespace Escenografia
 {
+    struct Box
+    {
+        public Vector3 minVertice;
+        public Vector3 maxVertice;
+        public Box(Vector3 minVertice, Vector3 maxVertice)
+        {
+            this.minVertice = minVertice;
+            this.maxVertice = maxVertice;
+        }
+    }
+
     abstract class Auto : Escenografia3D
     {
         //ralacionadas con movimiento
@@ -24,9 +35,16 @@ namespace Escenografia
 
         //esto lo implementan los hijos de la clase
         abstract public void mover(float deltaTime);
+
     }
     class AutoJugador : Auto
     {
+        private Box limites;
+        public AutoJugador(Vector3 posicion, Vector3 direccion)
+        {
+            this.posicion = posicion;
+            this.direccion = direccion;
+        }
         public AutoJugador(Vector3 posicion, Vector3 direccion, float aceleracion, float velocidadGiro)
         {
             this.direccion = direccion;
@@ -34,6 +52,19 @@ namespace Escenografia
             this.aceleracion = aceleracion;
             this.velocidadGiro = velocidadGiro;
         }
+        public void setLimites(Vector3 minLim, Vector3 maxLim)
+        {
+            limites = new Box(minLim, maxLim);
+        }
+        public void setAceleracion(float aceleracion)
+        {
+            this.aceleracion = aceleracion;
+        }
+        public void setVelocidadGiro(float velocidadGiro)
+        {
+            this.velocidadGiro = velocidadGiro;
+        }
+
         public override Matrix getWorldMatrix()
         {
             return Matrix.CreateFromYawPitchRoll(rotacionY, rotacionX, rotacionZ) * Matrix.CreateTranslation(posicion);
@@ -78,7 +109,8 @@ namespace Escenografia
             
             posicion += Vector3.Transform(direccion, Matrix.CreateFromYawPitchRoll(
                 rotacionY, rotacionX, rotacionZ) ) * velocidad * deltaTime;
-            posicion = Utils.Matematicas.clampV(posicion, esquinaInferiorEsc, esquinaSuperiorEsc);
+            velocidad = Math.Clamp(velocidad, -2000f, 2000f);
+            posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
         }
     }
 

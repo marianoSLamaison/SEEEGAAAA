@@ -27,7 +27,7 @@ namespace TGC.MonoGame.TP
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
 
-
+        
         private Effect _basicShader;
         
 
@@ -51,6 +51,7 @@ namespace TGC.MonoGame.TP
         private Cilindro _cilindro { get; set; }
         private Palmera _palmera { get; set; }
 
+        private AdminUtileria Escenario;
         private Escenografia.Plataforma _plataforma { get; set;}
 
 
@@ -85,32 +86,29 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState; 
 
-            generadorPrueba = new Control.AdministradorNPCs();
-            generadorPrueba.generadorNPCsV2(Vector3.Zero, 16000f, 50);
+            //generadorPrueba = new Control.AdministradorNPCs();
+            //generadorPrueba.generadorNPCsV2(Vector3.Zero, 16000f, 50);
 
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
             auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3.5f);
-            camarografo = new Control.Camarografo(
-
-                new Vector3(1f,1f,1f) * 1500f, Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
-
-            //_plant = new Model(GraphicsDevice, );
+            auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
+            camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
+            Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
-            _edificio = new PrismaRectangularEditable(GraphicsDevice, new Vector3(200f, 500f, 200f));
-            _cono = new Cono(new Vector3(0, 0 , 1000));
+            //_plant = new Model(GraphicsDevice, );
+            //_edificio = new PrismaRectangularEditable(GraphicsDevice, new Vector3(200f, 500f, 200f));
+            //_cono = new Cono(new Vector3(0, 0 , 1000));
 
-            _rampa = new Rampa(GraphicsDevice, new Vector3(200f, 500f, 500f), Vector3.Backward * -1000f);
+            //_rampa = new Rampa(GraphicsDevice, new Vector3(200f, 500f, 500f), Vector3.Backward * -1000f);
             //Inicializo Cilindro(graphics, radio  alto);
-            _cilindro = new Cilindro(GraphicsDevice, 2, 12);
+            //_cilindro = new Cilindro(GraphicsDevice, 2, 12);
 
-            _palmera = new Palmera(GraphicsDevice, new Vector3(0, 0, 1000));
-            _plataforma = new Plataforma(Convert.ToSingle(Math.PI / 2f), new Vector3(1000f,0f,1000f));
-            Escenografia.Plataforma.setGScale(10f);
+            //_palmera = new Palmera(GraphicsDevice, new Vector3(0, 0, 1000));
+            //_plataforma = new Plataforma(Convert.ToSingle(Math.PI / 2f), new Vector3(1000f,0f,1000f));
+            //Escenografia.Plataforma.setGScale(10f);
             base.Initialize();
-
-
         }
 
         /// <summary>
@@ -124,49 +122,43 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             String[] modelos = {ContentFolder3D + "Auto/RacingCar"};
             String[] efectos = {ContentFolderEffects + "BasicShader"};
-            generadorPrueba.loadModelosAutos(modelos, efectos, Content);
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "BasicShader", Content);
 
-            generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-            cuadrado = new Escenografia.Primitiva(GraphicsDevice, Content.Load<Effect>(efectos[0]), 
-            new Vector3(1f,0f,1f), new Vector3(1f,0f,-1f), new Vector3(-1f,0f,-1f), new Vector3(-1f,0f,1f));
+            cuadrado = Escenografia.Primitiva.RegPoligon(Vector3.Zero, 32, 1f);
+            cuadrado.loadPrimitiva(GraphicsDevice, Content.Load<Effect>(efectos[0]), Color.Brown);
 
-
-            
-            _plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
-
             _plane.SetEffect(_basicShader);
 
-            _cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-
-            _edificio.SetEffect(_basicShader);
-
-            _rampa.SetEffect(_basicShader);
-            _rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
-            _cono.SetScale(20f);
-
-            _cilindro.SetEffect(_basicShader);
-            _cilindro.SetPosition(new Vector3(1000f,0f,2000f));
-            _cilindro.SetScale(100f);
-            //4.75f son 90º aprox.
-            _cilindro.SetRotacion(0, 4.75f,4.75f);
-
+            //_plataforma.loadModel(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
+            Plataforma.setGScale(10f);
+            Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
+            //generadorPrueba.loadModelosAutos(modelos, efectos, Content);
+            generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
             
-            _palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
-            _palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
-            _palmera.SetScale(0.5f);
+            //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
 
-            _plataforma.loadModel(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
+            //_cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
+            //_cono.SetScale(20f);
+
+            //_edificio.SetEffect(_basicShader);
+
+            //_rampa.SetEffect(_basicShader);
+            //_rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
+
+            //_cilindro.SetEffect(_basicShader);
+            //_cilindro.SetPosition(new Vector3(1000f,0f,2000f));
+            //_cilindro.SetScale(100f);
+            //_cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
+
+            //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
+            //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
+            //_palmera.SetScale(0.5f);
+
 
             base.LoadContent();
         }
 
-        /// <summary>
-        ///     Se llama en cada frame.
-        ///     Se debe escribir toda la logica de computo del modelo, asi como tambien verificar entradas del usuario y reacciones
-        ///     ante ellas.
-        /// </summary>
         protected override void Update(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logica de actualizacion del juego.
@@ -184,37 +176,31 @@ namespace TGC.MonoGame.TP
             base.Update(gameTime);
         }
 
-        /// <summary>
-        ///     Se llama cada vez que hay que refrescar la pantalla.
-        ///     Escribir aqui el codigo referido al renderizado.
-        /// </summary>
-        ///
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
 
             GraphicsDevice.Clear(Color.LightBlue);
 
-            //cuadrado.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Brown);
-            
+            auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
+            Escenario.Dibujar(camarografo);
             _plane.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
+            generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             //_plant.Draw(camarografo.getWorldMatrix(), camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             
-            auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
-            generadorPrueba.drawAutos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
+            //generadorPrueba.drawAutos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             
             //_cono.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
-            generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
             //_edificio.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.BlanchedAlmond);
 
-            _rampa.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.SaddleBrown);
+            //_rampa.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.SaddleBrown);
 
-            _cilindro.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
+            //_cilindro.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
 
-            _palmera.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Green);
+            //_palmera.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Green);
 
-            _plataforma.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Crimson);
+            //_plataforma.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Crimson);
         }
 
         /// <summary>

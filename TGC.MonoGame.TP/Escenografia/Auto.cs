@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Data;
+using System.Collections.Generic;
 
 namespace Escenografia
 {
@@ -39,6 +40,7 @@ namespace Escenografia
     }
     class AutoJugador : Auto
     {
+        private List<Texture2D> Textures {get;set;} 
         private Box limites;
         public AutoJugador(Vector3 posicion, Vector3 direccion)
         {
@@ -70,13 +72,19 @@ namespace Escenografia
             return Matrix.CreateFromYawPitchRoll(rotacionY, rotacionX, rotacionZ) * Matrix.CreateTranslation(posicion);
         }
 
+
         public override void loadModel(string direcionModelo, string direccionEfecto, ContentManager contManager)
         {
             base.loadModel(direcionModelo, direccionEfecto, contManager);
+            Textures = new List<Texture2D>();
             foreach ( ModelMesh mesh in modelo.Meshes )
             {
                 foreach ( ModelMeshPart meshPart in mesh.MeshParts)
                 {
+                    var basicEffect = ((BasicEffect)meshPart.Effect);
+                    if(basicEffect.Texture != null)
+                        Textures.Add(basicEffect.Texture);
+                        
                     meshPart.Effect = efecto;
                 }
             }

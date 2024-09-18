@@ -176,6 +176,7 @@ namespace TGC.MonoGame.TP
             base.Update(gameTime);
         }
 
+private float Timer{get;set;}= 0f;
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
@@ -186,6 +187,7 @@ namespace TGC.MonoGame.TP
             Escenario.Dibujar(camarografo);
             _plane.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
+            
             //_plant.Draw(camarografo.getWorldMatrix(), camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             
             //generadorPrueba.drawAutos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
@@ -201,6 +203,10 @@ namespace TGC.MonoGame.TP
             //_palmera.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Green);
 
             //_plataforma.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Crimson);
+
+            Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;
+
+
         }
 
         /// <summary>

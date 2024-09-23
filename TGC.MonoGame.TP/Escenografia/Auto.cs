@@ -57,6 +57,14 @@ namespace Escenografia
         private Vector3 posicionRuedaTraseraIzquierda = new Vector3(-0.5f, -0.2f, -1.0f);
         private Vector3 posicionRuedaTraseraDerecha = new Vector3(0.5f, -0.2f, -1.0f);
 
+        private bool estaSaltando = false;
+
+        private float salto = 0f;
+        private float altura = 0f;
+        private float gravedad = 0f;
+        private float piso = 0f;
+        private float velocidadSalto = 500f;
+
         private Box limites;
         public AutoJugador(Vector3 posicion, Vector3 direccion)
         {
@@ -85,7 +93,7 @@ namespace Escenografia
 
         public override Matrix getWorldMatrix()
         {
-            return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion);
+            return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion + new Vector3(0, altura, 0));
         }
 
 
@@ -163,7 +171,7 @@ namespace Escenografia
 
                     // Calcular la matriz de transformación para la rueda
                     Matrix wheelWorld = Matrix.CreateRotationY(rotacionY) * // Rotación en el eje X (giro)
-                                        Matrix.CreateTranslation(posicion + posicionRueda);
+                                        Matrix.CreateTranslation(posicion + posicionRueda + new Vector3 (0, altura, 0));
 
                     efecto.Parameters["World"].SetValue(Matrix.CreateRotationX(rotacionX) * Matrix.CreateRotationY(rotacionYRueda) * mesh.ParentBone.Transform * wheelWorld);
                     mesh.Draw();
@@ -210,7 +218,29 @@ namespace Escenografia
             }
             
             rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
-            rotacionRuedasDelanteras *= 0.96f;
+            rotacionRuedasDelanteras *= 0.98f;
+
+            if (estaSaltando)
+            {
+                // Si está saltando, la velocidad vertical disminuye por gravedad
+                altura += salto * deltaTime;
+                gravedad += 7.5f * deltaTime;
+                salto -= gravedad;
+
+                // Si cae al suelo, termina el salto
+                if (altura <= piso)
+                {
+                    altura = piso;
+                    estaSaltando = false;
+                    salto = 0f;
+                }
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                estaSaltando = true;
+                salto = velocidadSalto;
+                gravedad = 7.5f;
+            }
             
             posicion += Vector3.Transform(direccion, Matrix.CreateFromYawPitchRoll(
                 rotacionY, 0, 0) ) * velocidad * deltaTime;

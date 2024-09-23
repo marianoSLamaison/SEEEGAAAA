@@ -51,6 +51,8 @@ namespace TGC.MonoGame.TP
         private Cilindro _cilindro { get; set; }
         private Palmera _palmera { get; set; }
 
+        private Terreno terreno;
+
         private AdminUtileria Escenario;
         private Escenografia.Plataforma _plataforma { get; set;}
 
@@ -97,6 +99,9 @@ namespace TGC.MonoGame.TP
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
+
+            terreno = new Terreno();
+
             //_plant = new Model(GraphicsDevice, );
             //_edificio = new PrismaRectangularEditable(GraphicsDevice, new Vector3(200f, 500f, 200f));
             //_cono = new Cono(new Vector3(0, 0 , 1000));
@@ -135,6 +140,9 @@ namespace TGC.MonoGame.TP
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
             //generadorPrueba.loadModelosAutos(modelos, efectos, Content);
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
+
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
+            terreno.SetEffect(_basicShader);
             
             //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
 
@@ -185,8 +193,10 @@ namespace TGC.MonoGame.TP
 
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
             Escenario.Dibujar(camarografo);
-            _plane.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
+            //_plane.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
+
+            terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             
             //_plant.Draw(camarografo.getWorldMatrix(), camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             

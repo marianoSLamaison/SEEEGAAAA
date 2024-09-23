@@ -38,9 +38,25 @@ namespace Escenografia
         abstract public void mover(float deltaTime);
 
     }
+
     class AutoJugador : Auto
     {
         private List<Texture2D> Textures {get;set;} 
+
+        private Texture2D baseColorTexture;
+        private Texture2D normalTexture;
+        private Texture2D metallicTexture;
+        private Texture2D roughnessTexture;
+        private Texture2D aoTexture;
+        private Texture2D emissionTexture;
+
+        private float rotacionRuedasDelanteras;
+
+        private Vector3 posicionRuedaDelanteraIzquierda = new Vector3(-0.5f, -0.2f, 1.0f); // Ajusta según tu modelo
+        private Vector3 posicionRuedaDelanteraDerecha = new Vector3(0.5f, -0.2f, 1.0f);
+        private Vector3 posicionRuedaTraseraIzquierda = new Vector3(-0.5f, -0.2f, -1.0f);
+        private Vector3 posicionRuedaTraseraDerecha = new Vector3(0.5f, -0.2f, -1.0f);
+
         private Box limites;
         public AutoJugador(Vector3 posicion, Vector3 direccion)
         {
@@ -69,26 +85,93 @@ namespace Escenografia
 
         public override Matrix getWorldMatrix()
         {
-            return Matrix.CreateFromYawPitchRoll(rotacionY, rotacionX, rotacionZ) * Matrix.CreateTranslation(posicion);
+            return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion);
         }
 
 
-        public override void loadModel(string direcionModelo, string direccionEfecto, ContentManager contManager)
-        {
-            base.loadModel(direcionModelo, direccionEfecto, contManager);
-            Textures = new List<Texture2D>();
-            foreach ( ModelMesh mesh in modelo.Meshes )
-            {
-                foreach ( ModelMeshPart meshPart in mesh.MeshParts)
+        public override void loadModel(string direccionModelo, string direccionEfecto, ContentManager contManager){
+            base.loadModel(direccionModelo, direccionEfecto, contManager);
+
+            // Cargar texturas específicas
+            baseColorTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_basecolor_0");
+            normalTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_normal");
+            metallicTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_metallic");
+            roughnessTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_rougness");
+            aoTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_ao");
+            emissionTexture = contManager.Load<Texture2D>("Models/Auto/" + "Vehicle_emission");
+
+            this.ApplyTexturesToShader();
+
+            // Asignar el shader a cada parte del modelo
+            foreach (ModelMesh mesh in modelo.Meshes)
+            {   
+                //Console.WriteLine(mesh.Name);
+                foreach (ModelMeshPart meshPart in mesh.MeshParts)
                 {
-                    var basicEffect = ((BasicEffect)meshPart.Effect);
-                    if(basicEffect.Texture != null)
-                        Textures.Add(basicEffect.Texture);
-                        
                     meshPart.Effect = efecto;
                 }
             }
         }
+
+        public void ApplyTexturesToShader()
+        {
+            efecto.Parameters["SamplerType+BaseColorTexture"].SetValue(baseColorTexture);
+            //efecto.Parameters["SamplerType+NormalTexture"].SetValue(normalTexture);
+            //efecto.Parameters["SamplerType+MetallicTexture"].SetValue(metallicTexture);
+            //efecto.Parameters["SamplerType+RoughnessTexture"].SetValue(roughnessTexture);
+            efecto.Parameters["SamplerType+AOTexture"].SetValue(aoTexture);
+            //efecto.Parameters["SamplerType+EmissionTexture"].SetValue(emissionTexture);
+        }
+
+        public override void dibujar(Matrix view, Matrix projection, Color color)
+        {
+            efecto.Parameters["View"].SetValue(view);
+            // le cargamos el como quedaria projectado en la pantalla
+            efecto.Parameters["Projection"].SetValue(projection);
+
+            foreach( ModelMesh mesh in modelo.Meshes)
+            {
+                if(mesh.Name == "Car"){
+                    efecto.Parameters["World"].SetValue(mesh.ParentBone.Transform * getWorldMatrix());
+                    mesh.Draw();
+                }
+
+                if (mesh.Name.StartsWith("Wheel"))
+                {
+                    Vector3 posicionRueda = Vector3.Zero;
+                    float rotacionYRueda = 0f;
+
+                    // Determinar la posición de la rueda según su nombre
+                    if (mesh.Name == "WheelB") {// Rueda delantera izquierda
+                        posicionRueda = posicionRuedaDelanteraIzquierda;
+                        rotacionYRueda = rotacionRuedasDelanteras;
+                    }
+                    else if (mesh.Name == "WheelA"){ // Rueda delantera derecha
+                        posicionRueda = posicionRuedaDelanteraDerecha;
+                        rotacionYRueda = rotacionRuedasDelanteras;
+
+                    }
+                    else if (mesh.Name == "WheelD") {
+                        // Rueda trasera izquierda
+                        posicionRueda = posicionRuedaTraseraIzquierda;
+                        rotacionYRueda = 0;
+                    }
+                    else if (mesh.Name == "WheelC"){ // Rueda trasera derecha
+                        posicionRueda = posicionRuedaTraseraDerecha;
+                        rotacionYRueda = 0;
+                    }
+
+                    // Calcular la matriz de transformación para la rueda
+                    Matrix wheelWorld = Matrix.CreateRotationY(rotacionY) * // Rotación en el eje X (giro)
+                                        Matrix.CreateTranslation(posicion + posicionRueda);
+
+                    efecto.Parameters["World"].SetValue(Matrix.CreateRotationX(rotacionX) * Matrix.CreateRotationY(rotacionYRueda) * mesh.ParentBone.Transform * wheelWorld);
+                    mesh.Draw();
+                }
+                        
+            }
+        }
+
         public override void mover(float deltaTime)
         {
             if ( Keyboard.GetState().IsKeyDown(Keys.S))
@@ -107,16 +190,28 @@ namespace Escenografia
             //los elvis operators/ ifinlines / ternaris. Estan solo para que el auto se mueva como un auto de verdad
             if ( Keyboard.GetState().IsKeyDown(Keys.A))
             {
-                rotacionY += (velocidad >= 0 ? velocidadGiro : -velocidadGiro) * deltaTime;
+                //rotacionY += (velocidad >= 0 ? velocidadGiro : -velocidadGiro) * deltaTime;
+                rotacionRuedasDelanteras += (velocidad >= 0 ? velocidadGiro : -velocidadGiro) * deltaTime;
             }
             if ( Keyboard.GetState().IsKeyDown(Keys.D))
             {
-                rotacionY += (velocidad >= 0 ? -velocidadGiro : velocidadGiro) * deltaTime;
+                //rotacionY += (velocidad >= 0 ? -velocidadGiro : velocidadGiro) * deltaTime;
+                rotacionRuedasDelanteras += (velocidad >= 0 ? -velocidadGiro : velocidadGiro) * deltaTime;
             }
+
+            rotacionX += velocidad * 0.001f;
+            
+            float escalarDeDerrape = Math.Clamp(velocidad * 0.000025f, 0.001f, 0.05f);
+
+            if(velocidad >= 10f || velocidad <= -10f){
+                rotacionY += rotacionRuedasDelanteras * escalarDeDerrape;
+            }
+            
+            rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
             
             
             posicion += Vector3.Transform(direccion, Matrix.CreateFromYawPitchRoll(
-                rotacionY, rotacionX, rotacionZ) ) * velocidad * deltaTime;
+                rotacionY, 0, 0) ) * velocidad * deltaTime;
             velocidad = Math.Clamp(velocidad, -2000f, 2000f);
             posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
         }

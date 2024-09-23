@@ -92,7 +92,7 @@ namespace TGC.MonoGame.TP
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
-            auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3.5f);
+            auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
@@ -122,7 +122,7 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             String[] modelos = {ContentFolder3D + "Auto/RacingCar"};
             String[] efectos = {ContentFolderEffects + "BasicShader"};
-            auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "BasicShader", Content);
+            auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
 
             cuadrado = Escenografia.Primitiva.RegPoligon(Vector3.Zero, 32, 1f);
             cuadrado.loadPrimitiva(GraphicsDevice, Content.Load<Effect>(efectos[0]), Color.Brown);
@@ -176,7 +176,7 @@ namespace TGC.MonoGame.TP
             base.Update(gameTime);
         }
 
-private float Timer{get;set;}= 0f;
+        private float Timer{get;set;}= 0f;
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.

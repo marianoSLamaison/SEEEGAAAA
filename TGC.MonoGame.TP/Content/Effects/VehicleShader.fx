@@ -59,8 +59,8 @@ float4 PS(VertexShaderOutput input) : SV_TARGET
     float4 baseColor = BaseColorTexture.Sample(SamplerType, input.TexCoord);
 
     // Obtener valores de metalicidad, rugosidad, y oclusión ambiental
-    float metallic = MetallicTexture.Sample(SamplerType, input.TexCoord).r;
-    float roughness = RoughnessTexture.Sample(SamplerType, input.TexCoord).r;
+    //float metallic = MetallicTexture.Sample(SamplerType, input.TexCoord).r;
+    //float roughness = RoughnessTexture.Sample(SamplerType, input.TexCoord).r;
     float ao = AOTexture.Sample(SamplerType, input.TexCoord).r;
     
     // Combinar difusa y especular
@@ -70,7 +70,8 @@ float4 PS(VertexShaderOutput input) : SV_TARGET
 
 
     // Devuelve el color final
-    return float4(lighting, baseColor.a);
+    //return float4(lighting, baseColor.a);
+    return float4(baseColor.rgb, baseColor.a);
 }
 
 

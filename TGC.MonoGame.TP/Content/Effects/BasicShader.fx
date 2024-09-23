@@ -20,27 +20,17 @@ float4x4 Projection;
 float3 DiffuseColor;
 
 float Time = 0;
-/*
-texture ModelTexture;
-sampler2D TextureSampler = sampler_state
-{
-	Texture = (ModelTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	AdressU = Clamp;
-	AdressV = Clamp;
-};
-*/
+
 struct VertexShaderInput
 {
 	float4 Position : POSITION0;
-	//float2 TextureCoordinates : TEXTCOORD0;
+	//float2 TextureCoordinates : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
 	float4 Position : SV_POSITION;
-	//float2 TextureCoordinates : TEXTCOORD0;
+	//float2 TextureCoordinates : TEXCOORD0;
 };
 
 VertexShaderOutput MainVS(in VertexShaderInput input)

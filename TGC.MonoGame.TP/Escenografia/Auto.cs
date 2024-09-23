@@ -119,7 +119,7 @@ namespace Escenografia
             //efecto.Parameters["SamplerType+NormalTexture"].SetValue(normalTexture);
             //efecto.Parameters["SamplerType+MetallicTexture"].SetValue(metallicTexture);
             //efecto.Parameters["SamplerType+RoughnessTexture"].SetValue(roughnessTexture);
-            efecto.Parameters["SamplerType+AOTexture"].SetValue(aoTexture);
+            //efecto.Parameters["SamplerType+AOTexture"].SetValue(aoTexture);
             //efecto.Parameters["SamplerType+EmissionTexture"].SetValue(emissionTexture);
         }
 
@@ -199,7 +199,9 @@ namespace Escenografia
                 rotacionRuedasDelanteras += (velocidad >= 0 ? -velocidadGiro : velocidadGiro) * deltaTime;
             }
 
+
             rotacionX += velocidad * 0.001f;
+
             
             float escalarDeDerrape = Math.Clamp(velocidad * 0.000025f, 0.001f, 0.05f);
 
@@ -208,7 +210,7 @@ namespace Escenografia
             }
             
             rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
-            
+            rotacionRuedasDelanteras *= 0.96f;
             
             posicion += Vector3.Transform(direccion, Matrix.CreateFromYawPitchRoll(
                 rotacionY, 0, 0) ) * velocidad * deltaTime;

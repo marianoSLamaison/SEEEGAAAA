@@ -12,8 +12,8 @@ public class Cilindro : Escenografia3D
     private GraphicsDevice _graphicsDevice;
     private VertexBuffer _vertexBuffer;
     private IndexBuffer _indexBuffer;
+    private Texture2D textureBox;
 
-    private List<Texture2D> Textures {get;set;}
 
     private const int Segmentos = 36;
     float scale;
@@ -34,11 +34,6 @@ public class Cilindro : Escenografia3D
     public void SetScale(float scale)
     {
         this.scale = scale;
-    }
-
-    public void AddTexture(Texture2D unaTexura)
-    {
-        this.Textures.Add(unaTexura);
     }
 
     private void CrearCilindro(float unRadio, float unAlto)
@@ -96,6 +91,10 @@ public class Cilindro : Escenografia3D
         _indexBuffer.SetData(indices.ToArray());
     }
 
+        public void ApplyTexturesToShader()
+        {
+            efecto.Parameters["SamplerType+TextureBox"].SetValue(textureBox);
+        }
 
 
     public override void dibujar(Matrix view, Matrix projection, Color color)
@@ -104,7 +103,7 @@ public class Cilindro : Escenografia3D
         efecto.Parameters["World"].SetValue(getWorldMatrix());
         efecto.Parameters["View"].SetValue(view);
         efecto.Parameters["Projection"].SetValue(projection);
-        efecto.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+        //efecto.Parameters["DiffuseColor"].SetValue(color.ToVector3());
         
         var rotationMatrix = Matrix.CreateScale(1f)* Matrix.CreateRotationY(1f);
 
@@ -120,17 +119,7 @@ public class Cilindro : Escenografia3D
             pass.Apply();
             _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indexBuffer.IndexCount / 3);
         }
-  /*
-        var index = 0;
-                foreach( var mesh in modelo.Meshes)
-        {           
-            if(Textures[index] != null)
-                efecto.Parameters["Texture"]?.SetValue(Textures[index]);
-            efecto.Parameters["World"]?.SetValue(getWorldMatrix());
-            _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _indexBuffer.IndexCount / 3);
-            index++;
-        }
-*/
+
     }
 
     public void SetPosition(Vector3 unaPosicion){
@@ -159,14 +148,17 @@ public class Cilindro : Escenografia3D
     public override void loadModel(string direccionModelo, string direccionEfecto, ContentManager contManager)
     {
         base.loadModel(direccionModelo, direccionEfecto, contManager);
-        Textures = new List<Texture2D>();
+   
+        //Cargo una textura
+        textureBox = contManager.Load<Texture2D>("Models/Cilindro/caja-madera-1");
+        
+        this.ApplyTexturesToShader();
 
         foreach (ModelMesh mesh in modelo.Meshes)
         {
             foreach (ModelMeshPart meshPart in mesh.MeshParts)
             {
-                var basicEffect = ((BasicEffect)meshPart.Effect);
-                Textures.Add(basicEffect.Texture);
+                //var basicEffect = ((BasicEffect)meshPart.Effect);
                 meshPart.Effect = efecto;
             }
         }

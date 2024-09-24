@@ -29,6 +29,8 @@ namespace TGC.MonoGame.TP
 
         
         private Effect _basicShader;
+        private Effect _vehicleShader;
+        private Effect _boxShader;
         
 
         //Control.Camera camara;
@@ -108,7 +110,7 @@ namespace TGC.MonoGame.TP
 
             //_rampa = new Rampa(GraphicsDevice, new Vector3(200f, 500f, 500f), Vector3.Backward * -1000f);
             //Inicializo Cilindro(graphics, radio  alto);
-            //_cilindro = new Cilindro(GraphicsDevice, 2, 12);
+            _cilindro = new Cilindro(GraphicsDevice, 2, 12);
 
             //_palmera = new Palmera(GraphicsDevice, new Vector3(0, 0, 1000));
             //_plataforma = new Plataforma(Convert.ToSingle(Math.PI / 2f), new Vector3(1000f,0f,1000f));
@@ -133,6 +135,8 @@ namespace TGC.MonoGame.TP
             cuadrado.loadPrimitiva(GraphicsDevice, Content.Load<Effect>(efectos[0]), Color.Brown);
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
+            _boxShader = Content.Load<Effect>(ContentFolderEffects + "BoxShader");
             _plane.SetEffect(_basicShader);
 
             //_plataforma.loadModel(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
@@ -153,12 +157,12 @@ namespace TGC.MonoGame.TP
 
             //_rampa.SetEffect(_basicShader);
             //_rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
+            _cilindro.SetEffect(_boxShader);
+            _cilindro.SetPosition(new Vector3(1000f,0f,2000f));
+            _cilindro.SetScale(100f);
+            _cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
 
-            //_cilindro.SetEffect(_basicShader);
-            //_cilindro.SetPosition(new Vector3(1000f,0f,2000f));
-            //_cilindro.SetScale(100f);
-            //_cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
-
+            
             //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
             //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
             //_palmera.SetScale(0.5f);
@@ -204,11 +208,11 @@ namespace TGC.MonoGame.TP
             
             //_cono.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
 
-            //_edificio.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.BlanchedAlmond);
+            //_edificio.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
 
             //_rampa.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.SaddleBrown);
 
-            //_cilindro.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
+            _cilindro.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
 
             //_palmera.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Green);
 

@@ -15,11 +15,11 @@ float4x4 Projection;
 float3 CameraPosition;
 
 // Texturas
-Texture2D BoxTexture;
+texture BoxTexture;
 // Sampler para las texturas
-samplerCUBE BoxSampler
+SamplerState SamplerType
 {
-    texture = <BoxTexture>;
+    texture = (BoxTexture);
     magfilter = LINEAR;
     minfilter = LINEAR;
     mipfilter = LINEAR;
@@ -55,9 +55,11 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     return output;
 }
 
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+float4 PixelShaderFunction(VertexShaderOutput input) : COLOR
 {
-    return float4(texCUBE(BoxSampler, normalize(input.TextureCoordinate)).rgb,1);
+    float4 color = tex2D(SamplerType, input.TextureCoordinate);
+    //return float4(texCUBE(SamplerType, normalize(input.TextureCoordinate)).rgb,1);
+    return color;
 }
 
 // Técnica

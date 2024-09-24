@@ -183,17 +183,17 @@ namespace Escenografia
         public override void mover(float deltaTime)
         {
             if ( Keyboard.GetState().IsKeyDown(Keys.S))
-            {
-                velocidad -= aceleracion * deltaTime;
-            }
-            else if ( Keyboard.GetState().IsKeyDown(Keys.W))
-            {
-                velocidad += aceleracion * deltaTime;
-            }
-            //la velocidad siempre se reducira por algun facot, en este caso por 4%
-            else 
-            {
-                velocidad *= 0.96f;
+                {
+                    velocidad -= aceleracion * deltaTime;
+                }
+                else if ( Keyboard.GetState().IsKeyDown(Keys.W))
+                {
+                    velocidad += aceleracion * deltaTime;
+                }
+                //la velocidad siempre se reducira por algun facot, en este caso por 4%
+                else 
+                {
+                    velocidad *= 0.96f;
             }
             //los elvis operators/ ifinlines / ternaris. Estan solo para que el auto se mueva como un auto de verdad
             if ( Keyboard.GetState().IsKeyDown(Keys.A))

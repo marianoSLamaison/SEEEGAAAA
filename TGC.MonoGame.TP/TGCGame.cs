@@ -137,6 +137,7 @@ namespace TGC.MonoGame.TP
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
             _boxShader = Content.Load<Effect>(ContentFolderEffects + "BoxShader");
+            Texture2D textureBox = Content.Load<Texture2D>(ContentFolder3D + "Cilindro/caja-madera-1");
             _plane.SetEffect(_basicShader);
 
             //_plataforma.loadModel(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
@@ -161,6 +162,9 @@ namespace TGC.MonoGame.TP
             _cilindro.SetPosition(new Vector3(1000f,0f,2000f));
             _cilindro.SetScale(100f);
             _cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
+            _cilindro.SetTexture(textureBox);
+            _cilindro.ApplyTexturesToShader();
+
 
             
             //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
@@ -192,7 +196,6 @@ namespace TGC.MonoGame.TP
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
-
             GraphicsDevice.Clear(Color.LightBlue);
 
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);

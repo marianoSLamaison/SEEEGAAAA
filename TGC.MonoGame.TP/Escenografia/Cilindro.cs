@@ -31,6 +31,10 @@ public class Cilindro : Escenografia3D
         return this.efecto;
     }
 
+    public void SetTexture(Texture2D unaTextura){
+        this.textureBox = unaTextura;
+    }
+
     public void SetScale(float scale)
     {
         this.scale = scale;
@@ -93,7 +97,7 @@ public class Cilindro : Escenografia3D
 
         public void ApplyTexturesToShader()
         {
-            efecto.Parameters["BoxSampler+BoxTexture"].SetValue(textureBox);
+            efecto.Parameters["BoxTexture"].SetValue(textureBox);
         }
 
 
@@ -144,13 +148,10 @@ public class Cilindro : Escenografia3D
     }
 
 
-
+/*
     public override void loadModel(string direccionModelo, string direccionEfecto, ContentManager contManager)
     {
         base.loadModel(direccionModelo, direccionEfecto, contManager);
-   
-        //Cargo una textura
-        textureBox = contManager.Load<Texture2D>("Models/Cilindro/caja-madera-1");
         
         this.ApplyTexturesToShader();
 
@@ -163,5 +164,5 @@ public class Cilindro : Escenografia3D
             }
         }
     }
-
+*/
 }

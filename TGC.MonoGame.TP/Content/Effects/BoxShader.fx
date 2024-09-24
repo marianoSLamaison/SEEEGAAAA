@@ -17,7 +17,7 @@ float3 CameraPosition;
 // Texturas
 Texture2D BoxTexture;
 // Sampler para las texturas
-samplerCUBE BoxSampler = sampler_state
+samplerCUBE BoxSampler
 {
     texture = <BoxTexture>;
     magfilter = LINEAR;

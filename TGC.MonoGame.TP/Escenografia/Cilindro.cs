@@ -93,7 +93,7 @@ public class Cilindro : Escenografia3D
 
         public void ApplyTexturesToShader()
         {
-            efecto.Parameters["SamplerType+TextureBox"].SetValue(textureBox);
+            efecto.Parameters["BoxSampler+BoxTexture"].SetValue(textureBox);
         }
 
 

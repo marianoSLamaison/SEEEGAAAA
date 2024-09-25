@@ -12,5 +12,9 @@ namespace Utils
             valor.Z = Math.Clamp(valor.Z, minimo.Z, maximo.Z);
             return valor; 
         }
+        public static double wrapf(double value, double min, double max)
+        {
+            return value > max ? min : value < min ? max : value;
+        }
     }
 }

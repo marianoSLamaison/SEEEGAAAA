@@ -45,14 +45,7 @@ namespace TGC.MonoGame.TP
 
 
         private Escenografia.Plano _plane { get; set; }
-        private PrismaRectangularEditable _edificio {get; set;}
-        private Model _plant { get; set; }
-
-        private Cono _cono { get; set; }
-        private Rampa _rampa { get; set; }
-        private Cilindro _cilindro { get; set; }
-        private Palmera _palmera { get; set; }
-
+        
         private Terreno terreno;
 
         private AdminUtileria Escenario;
@@ -76,10 +69,6 @@ namespace TGC.MonoGame.TP
             IsMouseVisible = true;
         }
 
-        /// <summary>
-        ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
-        ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
-        /// </summary>
         protected override void Initialize()
         {
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
@@ -90,8 +79,6 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState; 
 
-            //generadorPrueba = new Control.AdministradorNPCs();
-            //generadorPrueba.generadorNPCsV2(Vector3.Zero, 16000f, 50);
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
@@ -102,22 +89,9 @@ namespace TGC.MonoGame.TP
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
             terreno = new Terreno();
 
-            //_plant = new Model(GraphicsDevice, );
-            //_edificio = new PrismaRectangularEditable(GraphicsDevice, new Vector3(200f, 500f, 200f));
-            //_cono = new Cono(new Vector3(0, 0 , 1000));
-            //_rampa = new Rampa(GraphicsDevice, new Vector3(200f, 500f, 500f), Vector3.Backward * -1000f);
-            //_cilindro = new Cilindro(GraphicsDevice, 2, 12); //Cilindro(graphics, radio  alto);
-            //_palmera = new Palmera(GraphicsDevice, new Vector3(0, 0, 1000));
-            //_plataforma = new Plataforma(Convert.ToSingle(Math.PI / 2f), new Vector3(1000f,0f,1000f));
-            //Escenografia.Plataforma.setGScale(10f);
             base.Initialize();
         }
 
-        /// <summary>
-        ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo, despues de Initialize.
-        ///     Escribir aqui el codigo de inicializacion: cargar modelos, texturas, estructuras de optimizacion, el procesamiento
-        ///     que podemos pre calcular para nuestro juego.
-        /// </summary>
         protected override void LoadContent()
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
@@ -127,39 +101,18 @@ namespace TGC.MonoGame.TP
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
 
             cuadrado = Escenografia.Primitiva.RegPoligon(Vector3.Zero, 32, 1f);
-            cuadrado.loadPrimitiva(GraphicsDevice, Content.Load<Effect>(efectos[0]), Color.Brown);
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
             _plane.SetEffect(_basicShader);
-            //_boxShader = Content.Load<Effect>(ContentFolderEffects + "BoxShader");
-            //Texture2D textureBox = Content.Load<Texture2D>(ContentFolder3D + "Cilindro/caja-madera-1");
-
-            //_plataforma.loadModel(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
+            
             Plataforma.setGScale(10f);
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
-            //generadorPrueba.loadModelosAutos(modelos, efectos, Content);
+            
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
 
             terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
             terreno.SetEffect(_basicShader);
-            
-            //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
-            //_cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-            //_cono.SetScale(20f);
-            //_edificio.SetEffect(_basicShader);
-            //_rampa.SetEffect(_basicShader);
-            //_rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
-            //_cilindro.SetEffect(_boxShader);
-            //_cilindro.SetPosition(new Vector3(1000f,0f,2000f));
-            //_cilindro.SetScale(100f);
-            //_cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
-            //_cilindro.SetTexture(textureBox);
-            //_cilindro.ApplyTexturesToShader();
-            //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
-            //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
-            //_palmera.SetScale(0.5f);
-
 
             base.LoadContent();
         }
@@ -173,10 +126,10 @@ namespace TGC.MonoGame.TP
                 //Salgo del juego.
                 Exit();
             }
-            auto.mover(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            auto.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.posicion);
-            //camara.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            
             base.Update(gameTime);
         }
 
@@ -188,20 +141,11 @@ namespace TGC.MonoGame.TP
 
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
             Escenario.Dibujar(camarografo);
-            //_plane.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
+            
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             
-            //_plant.Draw(camarografo.getWorldMatrix(), camarografo.getViewMatrix(), camarografo.getProjectionMatrix());            
-            //generadorPrueba.drawAutos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());           
-            //_cono.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Orange);
-            //_edificio.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
-            //_rampa.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.SaddleBrown);
-            //_cilindro.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
-            //_palmera.dibujar(camarografo.getViewMatrix(),camarografo.getProjectionMatrix(), Color.Green);
-            //_plataforma.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Crimson);
-
             Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;
 
         }

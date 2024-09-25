@@ -26,7 +26,37 @@ namespace Escenografia
         protected float aceleracion;
         protected float velocidadGiro;
         //protected float peso;
+        protected bool estaSaltando = false;
+
+        protected float velocidadVertical = 0f;
+        protected float altura = 0f;
+        protected const float velocidadSalto = 500f;
+
+        protected const float maximaVelocidadPosible = 2536f;
+
+        protected Box limites;
         protected Vector3 direccion;
+
+
+     ///////Cosas de textureo//////////////   
+        protected List<Texture2D> Textures {get;set;} 
+
+        protected Texture2D baseColorTexture;
+        protected Texture2D normalTexture;
+        protected Texture2D metallicTexture;
+        protected Texture2D roughnessTexture;
+        protected Texture2D aoTexture;
+        protected Texture2D emissionTexture;
+
+        protected float rotacionRuedasDelanteras;
+        protected float revolucionDeRuedas;
+
+        protected Vector3 posicionRuedaDelanteraIzquierda = new Vector3(-0.5f, -0.2f, 1.0f); // Ajusta según tu modelo
+        protected Vector3 posicionRuedaDelanteraDerecha = new Vector3(0.5f, -0.2f, 1.0f);
+        protected Vector3 posicionRuedaTraseraIzquierda = new Vector3(-0.5f, -0.2f, -1.0f);
+        protected Vector3 posicionRuedaTraseraDerecha = new Vector3(0.5f, -0.2f, -1.0f);
+
+
 
         //para limitar el movimiento de objetos
         //esto es una constante
@@ -41,31 +71,7 @@ namespace Escenografia
 
     class AutoJugador : Auto
     {
-        private List<Texture2D> Textures {get;set;} 
 
-        private Texture2D baseColorTexture;
-        private Texture2D normalTexture;
-        private Texture2D metallicTexture;
-        private Texture2D roughnessTexture;
-        private Texture2D aoTexture;
-        private Texture2D emissionTexture;
-
-        private float rotacionRuedasDelanteras;
-
-        private Vector3 posicionRuedaDelanteraIzquierda = new Vector3(-0.5f, -0.2f, 1.0f); // Ajusta según tu modelo
-        private Vector3 posicionRuedaDelanteraDerecha = new Vector3(0.5f, -0.2f, 1.0f);
-        private Vector3 posicionRuedaTraseraIzquierda = new Vector3(-0.5f, -0.2f, -1.0f);
-        private Vector3 posicionRuedaTraseraDerecha = new Vector3(0.5f, -0.2f, -1.0f);
-
-        private bool estaSaltando = false;
-
-        private float salto = 0f;
-        private float altura = 0f;
-        private float gravedad = 0f;
-        private float piso = 0f;
-        private float velocidadSalto = 500f;
-
-        private Box limites;
         public AutoJugador(Vector3 posicion, Vector3 direccion)
         {
             this.posicion = posicion;
@@ -93,7 +99,7 @@ namespace Escenografia
 
         public override Matrix getWorldMatrix()
         {
-            return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion + new Vector3(0, altura, 0));
+            return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion);
         }
 
 
@@ -170,31 +176,32 @@ namespace Escenografia
                     }
 
                     // Calcular la matriz de transformación para la rueda
-                    Matrix wheelWorld = Matrix.CreateRotationY(rotacionY) * // Rotación en el eje X (giro)
-                                        Matrix.CreateTranslation(posicion + posicionRueda + new Vector3 (0, altura, 0));
-
-                    efecto.Parameters["World"].SetValue(Matrix.CreateRotationX(rotacionX) * Matrix.CreateRotationY(rotacionYRueda) * mesh.ParentBone.Transform * wheelWorld);
+                    Matrix wheelWorld = Matrix.CreateRotationY(rotacionY) * // cargamos su rotacion con respecto del eje XZ con respecto del auto
+                                        Matrix.CreateTranslation(posicion + posicionRueda); // cargamos su posicion con respcto del auto
+                    efecto.Parameters["World"].SetValue(Matrix.CreateRotationX(revolucionDeRuedas) * //primero la rotamos sobre su propio eje 
+                                                        Matrix.CreateRotationY(rotacionYRueda) * // segundo la rotamos sobre el plano XZ
+                                                        mesh.ParentBone.Transform * // luego la hacemos heredar la transformacion del padre
+                                                        wheelWorld); // pos ultimo
                     mesh.Draw();
                 }
                         
             }
         }
-
+/*
         public override void mover(float deltaTime)
         {
+            //incremento de velocidad
             if ( Keyboard.GetState().IsKeyDown(Keys.S))
-                {
-                    velocidad -= aceleracion * deltaTime;
-                }
-                else if ( Keyboard.GetState().IsKeyDown(Keys.W))
-                {
-                    velocidad += aceleracion * deltaTime;
-                }
-                //la velocidad siempre se reducira por algun facot, en este caso por 4%
-                else 
-                {
-                    velocidad *= 0.96f;
+            {
+                velocidad -= aceleracion * deltaTime;
             }
+            else if ( Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                velocidad += aceleracion * deltaTime;
+            }
+                //la velocidad siempre se reducira por algun factor, en este caso por 4%
+            else 
+                velocidad *= 0.96f;
             //los elvis operators/ ifinlines / ternaris. Estan solo para que el auto se mueva como un auto de verdad
             if ( Keyboard.GetState().IsKeyDown(Keys.A))
             {
@@ -209,45 +216,103 @@ namespace Escenografia
 
 
             rotacionX += velocidad * 0.001f;
-
-            
             float escalarDeDerrape = Math.Clamp(velocidad * 0.000025f, 0.001f, 0.05f);
 
-            if(velocidad >= 10f || velocidad <= -10f){
-                rotacionY += rotacionRuedasDelanteras * escalarDeDerrape;
-            }
-            
+            //limitamos el giro de las ruedas
             rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
+            //reducimos por un 2% su giro
             rotacionRuedasDelanteras *= 0.98f;
+            //chequemoa si 
+            if(velocidad >= 10f || velocidad <= -10f)
+                rotacionY += rotacionRuedasDelanteras * escalarDeDerrape;
 
             if (estaSaltando)
             {
                 // Si está saltando, la velocidad vertical disminuye por gravedad
-                altura += salto * deltaTime;
+                altura += velocidadVertical * deltaTime;
                 gravedad += 7.5f * deltaTime;
-                salto -= gravedad;
+                velocidadVertical -= gravedad;
 
                 // Si cae al suelo, termina el salto
                 if (altura <= piso)
                 {
                     altura = piso;
                     estaSaltando = false;
-                    salto = 0f;
+                    velocidadVertical = 0f;
                 }
             }
             else if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 estaSaltando = true;
-                salto = velocidadSalto;
+                velocidadVertical = velocidadSalto;
                 gravedad = 7.5f;
             }
             
             posicion += Vector3.Transform(direccion, Matrix.CreateFromYawPitchRoll(
-                rotacionY, 0, 0) ) * velocidad * deltaTime;
+                rotacionY, 0, 0) ) * velocidad * deltaTime + new Vector3(0, altura, 0);
             velocidad = Math.Clamp(velocidad, -2000f, 2000f);
             posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
         }
+*/
+        public void getInputs(float deltaTime)
+        {
+            if ( !estaSaltando )
+            {
+                //negativo si estamos llendo para atras
+                float velocidadDeGiroDefinitiva;
+                if ( Keyboard.GetState().IsKeyDown(Keys.W))
+                    velocidad += aceleracion * deltaTime;
+                else if ( Keyboard.GetState().IsKeyDown(Keys.S))
+                    velocidad -= aceleracion * deltaTime;
+                else 
+                    velocidad *= 0.96f;
+
+                velocidadDeGiroDefinitiva = velocidad >= 0 ? velocidadGiro : -velocidadGiro;
+                if ( Keyboard.GetState().IsKeyDown(Keys.A))
+                    rotacionRuedasDelanteras +=  velocidadDeGiroDefinitiva * deltaTime;
+                if ( Keyboard.GetState().IsKeyDown(Keys.D))
+                    rotacionRuedasDelanteras -= velocidadDeGiroDefinitiva * deltaTime;
+                if ( Keyboard.GetState().IsKeyDown(Keys.Space))
+                {
+                    velocidadVertical = velocidadSalto;
+                    estaSaltando = true;
+                }
+
+                //necesito una explicacion de esto despues
+                float escalarDeDerrape = Math.Clamp(velocidad / maximaVelocidadPosible, 0.025f, 0.05f);
+                //limitamos el giro de las ruedas
+                rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
+                //reducimos por un 2% su giro
+                rotacionRuedasDelanteras *= 0.98f;
+                //si estamos moviendonos, aplicamos rotacion
+                if(velocidad > 10f || velocidad < -10f)
+                {
+                    rotacionY += rotacionRuedasDelanteras * escalarDeDerrape;
+                    revolucionDeRuedas += ((float)Math.PI / 10) *deltaTime;
+                }
+
+            } else {
+                if (altura == 0)
+                {
+                    estaSaltando = false;
+                }
+            }
+            mover(deltaTime);
+        }
+        override public void mover(float deltaTime)
+        {
+            const float G = -500.5f;
+            velocidadVertical += G * deltaTime ;
+            altura += velocidadVertical * deltaTime;
+            altura = Math.Clamp(altura, 0, limites.maxVertice.Y);
+            posicion += Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)) * velocidad * deltaTime;
+            posicion.Y = altura;
+            posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
+            //limitamos la rotacion para que no ocurra que te quedas girando en un lado por ciempre
+            rotacionY = Convert.ToSingle(Utils.Matematicas.wrapf(rotacionY, 0, Math.Tau));
+        }
     }
+    
 
     class AutoNPC : Auto
     {

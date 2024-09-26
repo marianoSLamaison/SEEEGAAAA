@@ -6,6 +6,8 @@ using System;
 using System.Data;
 using System.Collections.Generic;
 using BepuPhysics.Collidables;
+using BepuPhysics;
+using Control;
 
 
 namespace Escenografia
@@ -73,6 +75,8 @@ namespace Escenografia
 
     class AutoJugador : Auto
     {
+        BodyHandle cuerpoAsociado;
+        TypedIndex referenciaAFigura;
 
         public AutoJugador(Vector3 posicion, Vector3 direccion)
         {
@@ -103,7 +107,6 @@ namespace Escenografia
         {
             return Matrix.CreateFromYawPitchRoll(rotacionY, 0, rotacionZ) * Matrix.CreateTranslation(posicion);
         }
-
 
         public override void loadModel(string direccionModelo, string direccionEfecto, ContentManager contManager){
             base.loadModel(direccionModelo, direccionEfecto, contManager);
@@ -296,7 +299,18 @@ namespace Escenografia
                     estaSaltando = false;
                 }
             }
-            mover(deltaTime);
+            moverFisico();
+        }
+        public void setBody(BodyHandle body)
+        {
+            cuerpoAsociado = body;
+        }
+        public void moverFisico()
+        {
+            BodyReference referenciaACuerpo = AdministradorDeFisicas.simulacion.Bodies.GetBodyReference(cuerpoAsociado);
+            System.Numerics.Vector3 pos = referenciaACuerpo.Pose.Position;
+            posicion = new Vector3(pos.X,pos.Y,pos.Z);
+            Control.AdministradorDeFisicas.AplicarFuerzaLineal(Vector3.Forward.ToNumerics() * 10f, cuerpoAsociado);
         }
         override public void mover(float deltaTime)
         {

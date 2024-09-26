@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
+using BepuPhysics;
+using BepuPhysics.Collidables;
 using Control;
 using Escenografia;
 using Microsoft.Xna.Framework;
@@ -40,15 +42,12 @@ namespace TGC.MonoGame.TP
 
         AdministradorConos generadorConos;
 
-        
-        Escenografia.Primitiva cuadrado;
-
-
         private Escenografia.Plano _plane { get; set; }
         
         private Terreno terreno;
 
         private AdminUtileria Escenario;
+        Primitiva Colisionable1;
         private Escenografia.Plataforma _plataforma { get; set;}
 
 
@@ -79,15 +78,32 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState; 
 
+
+            AdministradorDeFisicas.IniciarSimulacion(1/60f, Vector3.Zero);
+
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
             auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
+            
+            //seteamos una figura para el auto
+            var figuraAuto = new Sphere(1);
+            TypedIndex referenciaAFigura = AdministradorDeFisicas.simulacion.Shapes.Add(figuraAuto);
+            BodyHandle cuerpoAuto = AdministradorDeFisicas.agregarCuerpoDinamico(new RigidPose(Vector3.Zero.ToNumerics()),1f,referenciaAFigura,1);
+            auto.setBody(cuerpoAuto);
+
+
+
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
             terreno = new Terreno();
+
+            Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
+            Colisionable1.setPosicion(Vector3.Forward * 1000);
+            AdministradorDeFisicas.agregarCuerpoStatico(new RigidPose(Vector3.Forward.ToNumerics() * 1000),
+                                    AdministradorDeFisicas.simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(200,200,200)));
 
             base.Initialize();
         }
@@ -100,7 +116,7 @@ namespace TGC.MonoGame.TP
             String[] efectos = {ContentFolderEffects + "BasicShader"};
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
 
-            cuadrado = Escenografia.Primitiva.RegPoligon(Vector3.Zero, 32, 1f);
+            
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
@@ -113,6 +129,8 @@ namespace TGC.MonoGame.TP
 
             terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
             terreno.SetEffect(_basicShader);
+
+            Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
 
             base.LoadContent();
         }
@@ -130,6 +148,7 @@ namespace TGC.MonoGame.TP
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.posicion);
             
+            AdministradorDeFisicas.UpdateSimulacion();
             base.Update(gameTime);
         }
 
@@ -146,6 +165,8 @@ namespace TGC.MonoGame.TP
 
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             
+            Colisionable1.dibujar(camarografo);
+
             Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;
 
         }

@@ -1,3 +1,4 @@
+using BepuPhysics;
 using Control;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -83,7 +84,61 @@ namespace Escenografia
         private VertexPositionColor[] vertices;
         private Color color;
         private int numeroTriangulos;
+        private Vector3 posicion;
+        private BodyReference cuerpoReferencia;
 
+        public void setPosicion(Vector3 posicion)
+        {
+            this.posicion = posicion;
+        }
+
+        public Matrix getWorldMatrix()
+        {
+            return Matrix.CreateTranslation(posicion);
+        }
+
+        public static Primitiva Prisma(Vector3 vMenor, Vector3 vMayor)
+        {
+            Primitiva ret = new Primitiva();
+            
+            ret.vertices = new VertexPositionColor[8];
+
+            var vertices = new VertexPositionNormalTexture[8];
+            Vector3 [] lVertices = new Vector3[8];
+            Vector3 dimensiones = vMayor - vMenor;
+            lVertices[0] = vMenor;
+            lVertices[1] = new Vector3(vMayor.X, vMenor.Y, vMenor.Z);
+            lVertices[2] = new Vector3(vMenor.X, vMayor.Y, vMenor.Z);
+            lVertices[3] = new Vector3(vMenor.X, vMenor.Y, vMayor.Z);
+            lVertices[4] = new Vector3(vMayor.X, vMayor.Y, vMenor.Z);
+            lVertices[5] = new Vector3(vMayor.X, vMenor.Y, vMayor.Z);
+            lVertices[6] = new Vector3(vMenor.X, vMayor.Y, vMayor.Z);
+            lVertices[7] = vMayor;
+
+            // Vértices del prisma
+            ret.vertices[0] = new VertexPositionColor(lVertices[0], Color.DarkTurquoise);
+            ret.vertices[1] = new VertexPositionColor(lVertices[1], Color.DarkTurquoise);
+            ret.vertices[2] = new VertexPositionColor(lVertices[2], Color.DarkTurquoise);
+            ret.vertices[3] = new VertexPositionColor(lVertices[3], Color.DarkTurquoise);
+            ret.vertices[4] = new VertexPositionColor(lVertices[4], Color.DarkTurquoise);
+            ret.vertices[5] = new VertexPositionColor(lVertices[5], Color.DarkTurquoise);
+            ret.vertices[6] = new VertexPositionColor(lVertices[6], Color.DarkTurquoise);
+            ret.vertices[7] = new VertexPositionColor(lVertices[7], Color.DarkTurquoise);
+
+        // Definir índices para los triángulos
+            ret.indices = new short[]
+            {     
+                0, 2, 3, 3, 6, 2,// Frente
+                1, 5, 4, 4, 7, 5,// Atrás
+                3, 5, 6, 6, 7, 5,// Izquierda
+                0, 1, 2, 2, 4, 1,// Derecha
+                0, 3, 1, 1, 5, 3,// Arriba
+                2, 6, 4, 4, 7, 6// Abajo
+            };
+            ret.numeroTriangulos = 12;
+
+            return ret;
+        }
         public static Primitiva Triangulo(Vector3 vertice1, Vector3 vertice2, Vector3 vertice3)
         {
             Primitiva ret = new Primitiva();
@@ -107,7 +162,6 @@ namespace Escenografia
             ret.numeroTriangulos = 2;
             return ret;
         }
-
         public static Primitiva RegPoligon(Vector3 centro, int caras, float radio)
         {
             if ( caras < 3 ) throw new Exception("No puedes hacer una figura cerrada con 2 caras rectas.\n");
@@ -146,7 +200,7 @@ namespace Escenografia
         {
             effect.Parameters["Projection"].SetValue(camarografo.getProjectionMatrix());
             effect.Parameters["View"].SetValue(camarografo.getViewMatrix());
-            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(Vector3.Zero) * Matrix.CreateScale(1000f));
+            effect.Parameters["World"].SetValue(getWorldMatrix() * Matrix.CreateScale(1f));
             effect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
             foreach (var pass in effect.CurrentTechnique.Passes)
             {

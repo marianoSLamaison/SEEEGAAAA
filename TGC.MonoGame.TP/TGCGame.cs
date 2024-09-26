@@ -51,7 +51,8 @@ namespace TGC.MonoGame.TP
         private AdminUtileria Escenario;
         private Escenografia.Plataforma _plataforma { get; set;}
 
-
+        private Turbo turboPowerUp;
+        
         /// <summary>
         ///     Constructor del juego.
         /// </summary>

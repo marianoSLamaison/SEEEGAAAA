@@ -24,7 +24,7 @@ namespace Escenografia
     abstract class Auto : Escenografia3D
     {
         //ralacionadas con movimiento
-        protected float velocidad;
+        public float velocidad;
         protected float aceleracion;
         protected float velocidadGiro;
         //protected float peso;
@@ -310,7 +310,14 @@ namespace Escenografia
             //limitamos la rotacion para que no ocurra que te quedas girando en un lado por siempre
             rotacionY = Convert.ToSingle(Utils.Matematicas.wrapf(rotacionY, 0, Math.Tau));
         }
-    }
+
+        
+        public void RecogerPowerUp(PowerUp powerUp)
+        {
+        powerUp.ActivarPowerUp(this);   
+       }
+}
+
     
 
     class AutoNPC : Auto

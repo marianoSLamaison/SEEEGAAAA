@@ -106,7 +106,7 @@ namespace TGC.MonoGame.TP
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
             _plane.SetEffect(_basicShader);
             
-            Plataforma.setGScale(10f);
+            Plataforma.setGScale(15f);
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);

@@ -7,6 +7,7 @@ namespace Escenografia
 {
     class Plataforma : Escenografia3D
     {
+        private Texture2D texture;
         static private float g_scale;
         public Plataforma(float rotacionY, Vector3 posicion)
         {
@@ -14,6 +15,9 @@ namespace Escenografia
             this.posicion = posicion;
         }
 
+        public void SetTexture(Texture2D unaTextura){
+            this.texture = unaTextura;
+        }
         public override Matrix getWorldMatrix()
         {
             return Matrix.CreateScale(g_scale) * Matrix.CreateRotationY(rotacionY) * Matrix.CreateTranslation(posicion);

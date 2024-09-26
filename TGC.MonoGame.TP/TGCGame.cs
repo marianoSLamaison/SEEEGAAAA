@@ -30,7 +30,7 @@ namespace TGC.MonoGame.TP
         
         private Effect _basicShader;
         private Effect _vehicleShader;
-        private Effect _boxShader;
+        private Effect _terrenoShader;
         
 
         //Control.Camera camara;
@@ -104,6 +104,7 @@ namespace TGC.MonoGame.TP
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
+            _terrenoShader = Content.Load<Effect>(ContentFolderEffects + "TerrenoShader");
             _plane.SetEffect(_basicShader);
             
             Plataforma.setGScale(15f);
@@ -111,8 +112,12 @@ namespace TGC.MonoGame.TP
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
 
-            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
-            terreno.SetEffect(_basicShader);
+            //terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
+            //terreno.SetEffect(_basicShader);
+            /*Intento crear una variante de terreno con textura que no sea un sólo color.  Modificar en Terreno.dibujar() el Diffuse.*/
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/OrangeRockTexture", Content, 200f);
+            terreno.SetEffect(_terrenoShader);
+            
 
             base.LoadContent();
         }

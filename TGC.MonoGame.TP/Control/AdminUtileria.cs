@@ -24,12 +24,12 @@ namespace Control
         public AdminUtileria(Vector3 minLims, Vector3 maxLims)
         {
             limites = new Escenografia.Box(minLims, maxLims);
-            Vector3 dimenciones = maxLims - minLims;
+            Vector3 dimensiones = maxLims - minLims;
             objetosFijos = new List<Escenografia.Escenografia3D>
             {
                 new Escenografia.Plataforma(Convert.ToSingle(3*Math.PI / 2), minLims),
-                new Escenografia.Plataforma(Convert.ToSingle(Math.PI), new Vector3(minLims.X + dimenciones.X,0f, minLims.Z)),
-                new Escenografia.Plataforma(Convert.ToSingle(0),  new Vector3(minLims.X, 0f, minLims.Z + dimenciones.Z)),
+                new Escenografia.Plataforma(Convert.ToSingle(Math.PI), new Vector3(minLims.X + dimensiones.X,0f, minLims.Z)),
+                new Escenografia.Plataforma(Convert.ToSingle(0),  new Vector3(minLims.X, 0f, minLims.Z + dimensiones.Z)),
                 new Escenografia.Plataforma(Convert.ToSingle(Math.PI / 2), maxLims)
             };
         }

@@ -32,9 +32,9 @@ namespace Escenografia
 
         protected float velocidadVertical = 0f;
         protected float altura = 0f;
-        protected const float velocidadSalto = 500f;
+        protected const float velocidadSalto = 980f;        //Antes era 500f
 
-        protected const float maximaVelocidadPosible = 2536f;
+        protected const float maximaVelocidadPosible = 500f; //Antes era 2536f;
 
         protected Box limites;
         protected Vector3 direccion;
@@ -282,10 +282,10 @@ namespace Escenografia
                 //limitamos el giro de las ruedas
                 rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
                 //si estamos moviendonos, aplicamos rotacion al auto
-                if(velocidad != 0f)
+                if(velocidad >0.0001f || velocidad < -0.0001f)
                 {
                     rotacionY += velocidadDeGiroInstantanea * escalarDeDerrape;
-                    revolucionDeRuedas += ((float)Math.PI / 10) *deltaTime;
+                    revolucionDeRuedas += ((float)Math.PI / 2) *deltaTime;
                 }
                 //reducimos por un 2% su giro
                 rotacionRuedasDelanteras *= 0.98f;
@@ -300,14 +300,14 @@ namespace Escenografia
         }
         override public void mover(float deltaTime)
         {
-            const float G = -500.5f;
+            const float G = -980.5f;            //Antes era -500.5f
             velocidadVertical += G * deltaTime ;
             altura += velocidadVertical * deltaTime;
             altura = Math.Clamp(altura, 0, limites.maxVertice.Y);
             posicion += Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)) * velocidad * deltaTime;
             posicion.Y = altura;
             posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
-            //limitamos la rotacion para que no ocurra que te quedas girando en un lado por ciempre
+            //limitamos la rotacion para que no ocurra que te quedas girando en un lado por siempre
             rotacionY = Convert.ToSingle(Utils.Matematicas.wrapf(rotacionY, 0, Math.Tau));
         }
     }

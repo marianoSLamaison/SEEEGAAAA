@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Data;
 using System.Collections.Generic;
+using BepuPhysics.Collidables;
+
 
 namespace Escenografia
 {
@@ -280,7 +282,7 @@ namespace Escenografia
                 //limitamos el giro de las ruedas
                 rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
                 //si estamos moviendonos, aplicamos rotacion al auto
-                if(velocidad > 10f || velocidad < -10f)
+                if(velocidad != 0f)
                 {
                     rotacionY += velocidadDeGiroInstantanea * escalarDeDerrape;
                     revolucionDeRuedas += ((float)Math.PI / 10) *deltaTime;

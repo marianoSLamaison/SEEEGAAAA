@@ -145,10 +145,8 @@ namespace Escenografia
 
             foreach( ModelMesh mesh in modelo.Meshes)
             {
-                if(mesh.Name == "Car"){
+                if(mesh.Name == "Car")
                     efecto.Parameters["World"].SetValue(mesh.ParentBone.Transform * getWorldMatrix());
-                    mesh.Draw();
-                }
 
                 if (mesh.Name.StartsWith("Wheel"))
                 {
@@ -163,7 +161,6 @@ namespace Escenografia
                     else if (mesh.Name == "WheelA"){ // Rueda delantera derecha
                         posicionRueda = posicionRuedaDelanteraDerecha;
                         rotacionYRueda = rotacionRuedasDelanteras;
-
                     }
                     else if (mesh.Name == "WheelD") {
                         // Rueda trasera izquierda
@@ -174,17 +171,16 @@ namespace Escenografia
                         posicionRueda = posicionRuedaTraseraDerecha;
                         rotacionYRueda = 0;
                     }
-
                     // Calcular la matriz de transformación para la rueda
                     Matrix wheelWorld = Matrix.CreateRotationY(rotacionY) * // cargamos su rotacion con respecto del eje XZ con respecto del auto
                                         Matrix.CreateTranslation(posicion + posicionRueda); // cargamos su posicion con respcto del auto
+        
                     efecto.Parameters["World"].SetValue(Matrix.CreateRotationX(revolucionDeRuedas) * //primero la rotamos sobre su propio eje 
-                                                        Matrix.CreateRotationY(rotacionYRueda) * // segundo la rotamos sobre el plano XZ
+                                                        Matrix.CreateRotationY(rotacionYRueda ) * // segundo la rotamos sobre el plano XZ
                                                         mesh.ParentBone.Transform * // luego la hacemos heredar la transformacion del padre
                                                         wheelWorld); // pos ultimo
-                    mesh.Draw();
                 }
-                        
+                mesh.Draw();    
             }
         }
 /*
@@ -260,6 +256,7 @@ namespace Escenografia
             {
                 //negativo si estamos llendo para atras
                 float velocidadDeGiroDefinitiva;
+                float velocidadDeGiroInstantanea = 0f;
                 if ( Keyboard.GetState().IsKeyDown(Keys.W))
                     velocidad += aceleracion * deltaTime;
                 else if ( Keyboard.GetState().IsKeyDown(Keys.S))
@@ -269,28 +266,28 @@ namespace Escenografia
 
                 velocidadDeGiroDefinitiva = velocidad >= 0 ? velocidadGiro : -velocidadGiro;
                 if ( Keyboard.GetState().IsKeyDown(Keys.A))
-                    rotacionRuedasDelanteras +=  velocidadDeGiroDefinitiva * deltaTime;
+                    velocidadDeGiroInstantanea +=  velocidadDeGiroDefinitiva * deltaTime;
                 if ( Keyboard.GetState().IsKeyDown(Keys.D))
-                    rotacionRuedasDelanteras -= velocidadDeGiroDefinitiva * deltaTime;
+                    velocidadDeGiroInstantanea -= velocidadDeGiroDefinitiva * deltaTime;
                 if ( Keyboard.GetState().IsKeyDown(Keys.Space))
                 {
                     velocidadVertical = velocidadSalto;
                     estaSaltando = true;
                 }
-
+                rotacionRuedasDelanteras += velocidadDeGiroInstantanea * (velocidad >= 0 ? 1 : -1);
                 //necesito una explicacion de esto despues
-                float escalarDeDerrape = Math.Clamp(velocidad / maximaVelocidadPosible, 0.025f, 0.05f);
+                float escalarDeDerrape = Math.Abs(velocidad / maximaVelocidadPosible);
                 //limitamos el giro de las ruedas
                 rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
-                //reducimos por un 2% su giro
-                rotacionRuedasDelanteras *= 0.98f;
-                //si estamos moviendonos, aplicamos rotacion
+                //si estamos moviendonos, aplicamos rotacion al auto
                 if(velocidad > 10f || velocidad < -10f)
                 {
-                    rotacionY += rotacionRuedasDelanteras * escalarDeDerrape;
+                    rotacionY += velocidadDeGiroInstantanea * escalarDeDerrape;
                     revolucionDeRuedas += ((float)Math.PI / 10) *deltaTime;
                 }
-
+                //reducimos por un 2% su giro
+                rotacionRuedasDelanteras *= 0.98f;
+                
             } else {
                 if (altura == 0)
                 {

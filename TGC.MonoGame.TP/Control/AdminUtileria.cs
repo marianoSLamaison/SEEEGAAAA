@@ -8,11 +8,11 @@ namespace Control
 {
     class AdminUtileria
     {
-        Escenografia.Box limites;
+        Escenografia.LimBox limites;
         private List<Escenografia.Escenografia3D> objetosFijos;
         public AdminUtileria(Vector3 minLims, Vector3 maxLims)
         {
-            limites = new Escenografia.Box(minLims, maxLims);
+            limites = new Escenografia.LimBox(minLims, maxLims);
             Vector3 dimenciones = maxLims - minLims;
             objetosFijos = new List<Escenografia.Escenografia3D>
             {

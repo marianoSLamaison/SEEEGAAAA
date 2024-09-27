@@ -1,4 +1,5 @@
 using BepuPhysics;
+using BepuPhysics.Collidables;
 using Control;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -84,18 +85,10 @@ namespace Escenografia
         private VertexPositionColor[] vertices;
         private Color color;
         private int numeroTriangulos;
-        private Vector3 posicion;
-        private BodyReference cuerpoReferencia;
+        private BodyReference cuerpoFisico;
+        public BodyHandle handlerCuerpo;
 
-        public void setPosicion(Vector3 posicion)
-        {
-            this.posicion = posicion;
-        }
-
-        public Matrix getWorldMatrix()
-        {
-            return Matrix.CreateTranslation(posicion);
-        }
+        public System.Numerics.Vector3 Posicion {get {return cuerpoFisico.Pose.Position;}}
 
         public static Primitiva Prisma(Vector3 vMenor, Vector3 vMayor)
         {
@@ -196,17 +189,25 @@ namespace Escenografia
             this.color = color;
         }
 
-        public void dibujar(Camarografo camarografo)
+        public void dibujar(Camarografo camarografo, System.Numerics.Vector3 pos)
         {
             effect.Parameters["Projection"].SetValue(camarografo.getProjectionMatrix());
             effect.Parameters["View"].SetValue(camarografo.getViewMatrix());
-            effect.Parameters["World"].SetValue(getWorldMatrix() * Matrix.CreateScale(1f));
+            effect.Parameters["World"].SetValue(Matrix.CreateTranslation(pos.X,pos.Y,pos.Z) * Matrix.CreateScale(1f));
             effect.Parameters["DiffuseColor"].SetValue(color.ToVector3());
-            foreach (var pass in effect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertices, 0, 4, indices, 0, numeroTriangulos);
             }
+        }
+        public void setearCuerpoPrisma(Vector3 minV, Vector3 maxV, Vector3 posicion)
+        {
+            Vector3 dims = maxV - minV;
+            TypedIndex figura = AyudanteSimulacion.simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(dims.X,dims.Y,dims.Z));
+            handlerCuerpo = AyudanteSimulacion.agregarCuerpoDinamico(new RigidPose(posicion.ToNumerics()), 1f, figura, 1f);
+            cuerpoFisico = AyudanteSimulacion.simulacion.Bodies.GetBodyReference(handlerCuerpo);
+            cuerpoFisico.Activity.SleepThreshold = -1f;
         }
         public void Dispose()
         {

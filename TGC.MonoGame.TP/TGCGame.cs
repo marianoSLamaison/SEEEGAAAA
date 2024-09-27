@@ -34,10 +34,12 @@ namespace TGC.MonoGame.TP
         private Effect _vehicleShader;
         private Effect _boxShader;
         
+        private Simulation _simulacion;
 
         //Control.Camera camara;
         Control.Camarografo camarografo;
-        Escenografia.AutoJugador auto;
+        //Escenografia.AutoJugador auto;
+        Escenografia.JugadorColisionable jugador;
         Control.AdministradorNPCs generadorPrueba;
 
         AdministradorConos generadorConos;
@@ -78,22 +80,27 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState; 
 
+            _simulacion = Simulation.Create(new BepuUtilities.Memory.BufferPool(), 
+                                            new Control.AyudanteSimulacion.NarrowPhaseCallbacks(), 
+                                            new Control.AyudanteSimulacion.PoseIntegratorCallbacks(Vector3.Zero.ToNumerics()),
+                                            new SolveDescription(5,1));
 
-            AdministradorDeFisicas.IniciarSimulacion(1/60f, Vector3.Zero);
+            AyudanteSimulacion.simulacion = _simulacion;
 
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
+            /*
             auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
             
             //seteamos una figura para el auto
             var figuraAuto = new BepuPhysics.Collidables.Box(500f, 500f, 500f);
 
-            TypedIndex referenciaAFigura = AdministradorDeFisicas.simulacion.Shapes.Add(figuraAuto);
-            BodyHandle cuerpoAuto = AdministradorDeFisicas.agregarCuerpoDinamico(new RigidPose(Vector3.Zero.ToNumerics()),10f,referenciaAFigura,10f);
+            TypedIndex referenciaAFigura = AdminFisicas.simulacion.Shapes.Add(figuraAuto);
+            BodyHandle cuerpoAuto = AdminFisicas.agregarCuerpoDinamico(new RigidPose(Vector3.Zero.ToNumerics()),10f,referenciaAFigura,10f);
             auto.setBody(cuerpoAuto);
-
+            */
 
 
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
@@ -102,10 +109,11 @@ namespace TGC.MonoGame.TP
             terreno = new Terreno();
 
             Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
-            Colisionable1.setPosicion(Vector3.Forward * 1000);
-            AdministradorDeFisicas.agregarCuerpoStatico(new RigidPose(Vector3.Forward.ToNumerics() * 1000),
-                                    AdministradorDeFisicas.simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(200,200,200)));
-
+            AyudanteSimulacion.agregarCuerpoStatico(_simulacion,new RigidPose(Vector3.Zero.ToNumerics()),
+                                    _simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(200,200,200)));
+            
+            jugador = new JugadorColisionable();
+            jugador.setForma(new Vector3(100,100,100) * 5, new Vector3(100,100,100) * -5, Vector3.Forward * 1500);
             base.Initialize();
         }
 
@@ -115,7 +123,9 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             String[] modelos = {ContentFolder3D + "Auto/RacingCar"};
             String[] efectos = {ContentFolderEffects + "BasicShader"};
-            auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
+            
+            
+            //auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
 
             
 
@@ -132,6 +142,7 @@ namespace TGC.MonoGame.TP
             terreno.SetEffect(_basicShader);
 
             Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
+            jugador.loadJugador(Graphics.GraphicsDevice, _basicShader);
 
             base.LoadContent();
         }
@@ -145,11 +156,12 @@ namespace TGC.MonoGame.TP
                 //Salgo del juego.
                 Exit();
             }
-            auto.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            jugador.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            //auto.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
             //para que el camarografo nos siga siempre
-            camarografo.setPuntoAtencion(auto.posicion);
-            
-            AdministradorDeFisicas.UpdateSimulacion();
+            //camarografo.setPuntoAtencion(auto.posicion);
+            camarografo.setPuntoAtencion(jugador.Posicion);
+            _simulacion.Timestep(1f/60f);//por ahora corre en el mismo thread que todo lo demas
             base.Update(gameTime);
         }
 
@@ -159,14 +171,17 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.LightBlue);
 
-            auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
+            //auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
+
+
             Escenario.Dibujar(camarografo);
             
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             
-            Colisionable1.dibujar(camarografo);
+            Colisionable1.dibujar(camarografo, Vector3.Zero.ToNumerics());
+            jugador.dibujar(camarografo);
 
             Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;
 

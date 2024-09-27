@@ -12,11 +12,11 @@ using Control;
 
 namespace Escenografia
 {
-    struct Box
+    struct LimBox
     {
         public Vector3 minVertice;
         public Vector3 maxVertice;
-        public Box(Vector3 minVertice, Vector3 maxVertice)
+        public LimBox(Vector3 minVertice, Vector3 maxVertice)
         {
             this.minVertice = minVertice;
             this.maxVertice = maxVertice;
@@ -38,7 +38,7 @@ namespace Escenografia
 
         protected const float maximaVelocidadPosible = 2536f;
 
-        protected Box limites;
+        protected LimBox limites;
         protected Vector3 direccion;
 
 
@@ -92,7 +92,7 @@ namespace Escenografia
         }
         public void setLimites(Vector3 minLim, Vector3 maxLim)
         {
-            limites = new Box(minLim, maxLim);
+            limites = new LimBox(minLim, maxLim);
         }
         public void setAceleracion(float aceleracion)
         {
@@ -310,7 +310,7 @@ namespace Escenografia
         public void moverFisico(float deltaTime)
         {
             //Obtiene el cuerpo de Bepu
-            BodyReference referenciaACuerpo = AdministradorDeFisicas.simulacion.Bodies.GetBodyReference(cuerpoAsociado);
+            BodyReference referenciaACuerpo = AyudanteSimulacion.simulacion.Bodies.GetBodyReference(cuerpoAsociado);
             System.Numerics.Vector3 pos = referenciaACuerpo.Pose.Position;
             posicion = new Vector3(pos.X,pos.Y,pos.Z);
             //Control.AdministradorDeFisicas.AplicarFuerzaLineal(Vector3.Forward.ToNumerics() * 10f, cuerpoAsociado);
@@ -334,8 +334,54 @@ namespace Escenografia
             rotacionY = Convert.ToSingle(Utils.Matematicas.wrapf(rotacionY, 0, Math.Tau));
         }
     }
-    
 
+    class JugadorColisionable 
+    {
+        float fuerza;
+        Primitiva figuraAsociada;
+        public System.Numerics.Vector3 Posicion { get { return figuraAsociada.Posicion;}}
+
+        public void setForma(Vector3 minVer, Vector3 maxVer, Vector3 posInicial)
+        {
+            figuraAsociada = Primitiva.Prisma(minVer, maxVer);
+            figuraAsociada.setearCuerpoPrisma( minVer,maxVer,posInicial);
+            fuerza = 500f;
+        }
+
+        public void dibujar(Camarografo camarografo)
+        {
+            figuraAsociada.dibujar(camarografo, Posicion);
+        }
+
+        public void getInputs(float deltaTime)
+        {
+            //aplicamos la fuerza al auto
+            float fuerzaInstantanea = fuerza * deltaTime;
+            
+            //AdminFisicas.AplicarFuerzaLineal(Vector3.Backward.ToNumerics() * 0.5f,figuraAsociada.referenciaCuerpo);
+            if ( Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                AyudanteSimulacion.AplicarFuerzaLineal(Vector3.Backward.ToNumerics() * fuerzaInstantanea, figuraAsociada.handlerCuerpo);
+                Console.WriteLine("Retrocediendo " + Posicion);
+            }
+            else if ( Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                AyudanteSimulacion.AplicarFuerzaLineal(Vector3.Forward.ToNumerics() * fuerzaInstantanea, figuraAsociada.handlerCuerpo);
+                Console.WriteLine("Avanzando " + Posicion);
+            }
+            
+                     
+        }
+        public void loadJugador(GraphicsDevice graphics, Effect efecto)
+        {
+            figuraAsociada.loadPrimitiva(graphics, efecto, Color.Black);
+        }
+        
+        public void mover(float deltaTime)
+        {
+            getInputs(deltaTime);
+        }
+    }
     class AutoNPC : Auto
     {
         public Color color;

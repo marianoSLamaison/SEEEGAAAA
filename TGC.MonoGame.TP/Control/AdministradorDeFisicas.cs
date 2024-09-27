@@ -14,19 +14,16 @@ using System.Runtime.CompilerServices;
 /// </summary>
 namespace Control
 {
-    public static class AdministradorDeFisicas
+    public static class AyudanteSimulacion
     {
-        private static BufferPool bufferPool;
-        public static Simulation simulacion;
-        private static float deltaTime;//para definir que tan pequeño es el intervalo de tiempo para la simulacion
-        private static ThreadDispatcher threadDispatcher;//para administrar el o los hilos que vallamos a usar
+        static public Simulation simulacion;
 
         //The simulation has a variety of extension points that must be defined. 
         //The demos tend to reuse a few types like the DemoNarrowPhaseCallbacks, but this demo will provide its own (super simple) versions.
         //If you're wondering why the callbacks are interface implementing structs rather than classes or events, it's because 
         //the compiler can specialize the implementation using the compile time type information. That avoids dispatch overhead associated
         //with delegates or virtual dispatch and allows inlining, which is valuable for extremely high frequency logic like contact callbacks.
-        struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
+        public struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
         {
             /// <summary>
             /// Performs any required initialization logic after the Simulation instance has been constructed.
@@ -224,15 +221,7 @@ namespace Control
             }
 
         }
-
-        public static void IniciarSimulacion(float fraccionDeTiempo, Microsoft.Xna.Framework.Vector3 gravedad)
-        {
-            bufferPool = new BufferPool();
-            simulacion = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(gravedad.ToNumerics()), new SolveDescription(5,1));
-            threadDispatcher = new ThreadDispatcher(1);//depues lo cambiamos
-            deltaTime = fraccionDeTiempo;
-        }
-        public static void agregarCuerpoStatico(RigidPose pose, TypedIndex figura)
+        public static void agregarCuerpoStatico(Simulation simulacion, RigidPose pose, TypedIndex figura)
         {
             //TODO: ver si tenemos que usar para algo el retorno de esta cosa
             simulacion.Statics.Add(new StaticDescription(pose,figura));
@@ -252,17 +241,15 @@ namespace Control
             return CuerpoAsociado;
         }
 
-        public static void AplicarFuerzaLineal(Vector3 fuerzaLineal, BodyHandle handlerDeCuerpo)
+        public static void AplicarFuerzaLineal( Vector3 fuerzaLineal, BodyHandle handlerDeCuerpo)
         {
             BodyReference referenciaACuerpo = simulacion.Bodies.GetBodyReference(handlerDeCuerpo);
             referenciaACuerpo.ApplyLinearImpulse(fuerzaLineal);
         }
-
-        public static void UpdateSimulacion()
+        public static void setBodyVelocity( Vector3 Velocity, BodyHandle handler)
         {
-            simulacion.Timestep(deltaTime, threadDispatcher);
+            simulacion.Bodies.GetBodyReference(handler).Velocity = Velocity;
         }
-
 
         /// <summary>
         /// Solo para estudiar, no tengo hace nada ahora por que no puedes ver nada
@@ -270,7 +257,7 @@ namespace Control
         public static void SimulacionEjemplo()
         {
             //The buffer pool is a source of raw memory blobs for the engine to use.
-            bufferPool = new BufferPool();
+            BufferPool bufferPool = new BufferPool();
             //The following sets up a simulation with the callbacks defined above, and tells it to use 8 velocity iterations per substep and only one substep per solve.
             //It uses the default SubsteppingTimestepper. You could use a custom ITimestepper implementation to customize when stages run relative to each other, or to insert more callbacks.         
             var simulation = Simulation.Create(bufferPool, new NarrowPhaseCallbacks(), new PoseIntegratorCallbacks(new Vector3(0, -10, 0)), new SolveDescription(8, 1));

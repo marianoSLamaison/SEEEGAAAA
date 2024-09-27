@@ -88,9 +88,10 @@ namespace TGC.MonoGame.TP
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
             
             //seteamos una figura para el auto
-            var figuraAuto = new Sphere(1);
+            var figuraAuto = new BepuPhysics.Collidables.Box(500f, 500f, 500f);
+
             TypedIndex referenciaAFigura = AdministradorDeFisicas.simulacion.Shapes.Add(figuraAuto);
-            BodyHandle cuerpoAuto = AdministradorDeFisicas.agregarCuerpoDinamico(new RigidPose(Vector3.Zero.ToNumerics()),1f,referenciaAFigura,1);
+            BodyHandle cuerpoAuto = AdministradorDeFisicas.agregarCuerpoDinamico(new RigidPose(Vector3.Zero.ToNumerics()),10f,referenciaAFigura,10f);
             auto.setBody(cuerpoAuto);
 
 

@@ -299,18 +299,27 @@ namespace Escenografia
                     estaSaltando = false;
                 }
             }
-            moverFisico();
+            //mover(deltaTime);
+            moverFisico(deltaTime);
         }
         public void setBody(BodyHandle body)
         {
             cuerpoAsociado = body;
         }
-        public void moverFisico()
+        //TODO: Rework del movimiento del auto
+        public void moverFisico(float deltaTime)
         {
+            //Obtiene el cuerpo de Bepu
             BodyReference referenciaACuerpo = AdministradorDeFisicas.simulacion.Bodies.GetBodyReference(cuerpoAsociado);
             System.Numerics.Vector3 pos = referenciaACuerpo.Pose.Position;
             posicion = new Vector3(pos.X,pos.Y,pos.Z);
-            Control.AdministradorDeFisicas.AplicarFuerzaLineal(Vector3.Forward.ToNumerics() * 10f, cuerpoAsociado);
+            //Control.AdministradorDeFisicas.AplicarFuerzaLineal(Vector3.Forward.ToNumerics() * 10f, cuerpoAsociado);
+            //Le aplicamos fuerza en la direccion que qeuremos
+            System.Numerics.Vector3 Fuerza = Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)).ToNumerics();
+            referenciaACuerpo.ApplyImpulse(Fuerza,
+                                    posicion.ToNumerics());
+            
+            
         }
         override public void mover(float deltaTime)
         {
@@ -318,7 +327,7 @@ namespace Escenografia
             velocidadVertical += G * deltaTime ;
             altura += velocidadVertical * deltaTime;
             altura = Math.Clamp(altura, 0, limites.maxVertice.Y);
-            posicion += Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)) * velocidad * deltaTime;
+            //posicion += Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)) * velocidad * deltaTime;
             posicion.Y = altura;
             posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
             //limitamos la rotacion para que no ocurra que te quedas girando en un lado por ciempre

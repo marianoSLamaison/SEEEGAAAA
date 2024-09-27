@@ -20,9 +20,9 @@ abstract class PowerUp
     public abstract void DesactivarPowerUp(AutoJugador auto);
     public abstract void ActualizarPowerUp(GameTime gameTime);
 
-    internal void ActivarPowerUp()
+    public void ActivarPowerUp(string tipoPowerUp)
     {
-        throw new NotImplementedException();
+    
     }
 }
 
@@ -34,7 +34,7 @@ class Turbo : PowerUp
     {
         tipoPowerUp = "Turbo";
         DuracionPowerUp = 5f;
-        boostVelocidad = 100f;
+        boostVelocidad = 150f;
     }
 
     public override void ActivarPowerUp(AutoJugador auto)

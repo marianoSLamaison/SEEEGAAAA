@@ -251,7 +251,8 @@ namespace Escenografia
             velocidad = Math.Clamp(velocidad, -2000f, 2000f);
             posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
         }
-*/
+*/private float duracionTurbo = 0f;  // Variable para controlar la duración del turbo
+private bool turboActivo = false; 
         public void getInputs(float deltaTime)
         {
             if ( !estaSaltando )
@@ -264,7 +265,7 @@ namespace Escenografia
                 else if ( Keyboard.GetState().IsKeyDown(Keys.S))
                     velocidad -= aceleracion * deltaTime;
                 else 
-                    velocidad *= 0.96f;
+                    velocidad *= 0.56f;
 
                 velocidadDeGiroDefinitiva = velocidad >= 0 ? velocidadGiro : -velocidadGiro;
                 if ( Keyboard.GetState().IsKeyDown(Keys.A))
@@ -276,6 +277,13 @@ namespace Escenografia
                     velocidadVertical = velocidadSalto;
                     estaSaltando = true;
                 }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.T))
+                {
+                Turbo turbo = new Turbo();
+                RecogerPowerUp(turbo);
+                }
+
                 rotacionRuedasDelanteras += velocidadDeGiroInstantanea * (velocidad >= 0 ? 1 : -1);
                 //necesito una explicacion de esto despues
                 float escalarDeDerrape = Math.Abs(velocidad / maximaVelocidadPosible);

@@ -227,6 +227,11 @@ namespace Control
             //TODO: ver si tenemos que usar para algo el retorno de esta cosa
             return simulacion.Statics.Add(new StaticDescription(pose,figura));
         }
+        public static Microsoft.Xna.Framework.Vector3 NumericsToMicrosofth(System.Numerics.Vector3 v) => new Vector3(v.X,v.Y,v.Z);
+        public static BodyReference getRefCuerpoDinamico(BodyHandle handler)
+        {
+            return simulacion.Bodies.GetBodyReference(handler);
+        }
 
         //las figuras se declaran por fuera por que no tengo tiempo de ver como hacerlo mas de una
         public static BodyHandle agregarCuerpoDinamico(RigidPose pose,

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Control
 {
+    /*TODO: Crear una nueva de estas para cuando tengamos NPCs que se muevan
     class AdministradorNPCs
     {
         static Random RNG = new Random();
@@ -85,7 +86,7 @@ namespace Control
             }
         }
     }
-
+*/
     public class AdministradorConos{
         static Random RNG = new Random();
         List<Cono> conos;

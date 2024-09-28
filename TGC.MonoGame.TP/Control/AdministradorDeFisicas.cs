@@ -61,7 +61,8 @@ namespace Control
 
                 //This function also exposes the speculative margin. It can be validly written to, but that is a very rare use case.
                 //Most of the time, you can ignore this function's speculativeMargin parameter entirely.
-                return a.Mobility == CollidableMobility.Dynamic || b.Mobility == CollidableMobility.Dynamic;
+                //return a.Mobility == CollidableMobility.Dynamic || b.Mobility == CollidableMobility.Dynamic;
+                return true;
             }
 
             /// <summary>
@@ -221,10 +222,10 @@ namespace Control
             }
 
         }
-        public static void agregarCuerpoStatico(Simulation simulacion, RigidPose pose, TypedIndex figura)
+        public static StaticHandle agregarCuerpoStatico( RigidPose pose, TypedIndex figura)
         {
             //TODO: ver si tenemos que usar para algo el retorno de esta cosa
-            simulacion.Statics.Add(new StaticDescription(pose,figura));
+            return simulacion.Statics.Add(new StaticDescription(pose,figura));
         }
 
         //las figuras se declaran por fuera por que no tengo tiempo de ver como hacerlo mas de una

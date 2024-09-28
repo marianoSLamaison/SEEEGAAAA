@@ -40,8 +40,6 @@ namespace TGC.MonoGame.TP
         Control.Camarografo camarografo;
         //Escenografia.AutoJugador auto;
         Escenografia.JugadorColisionable jugador;
-        Control.AdministradorNPCs generadorPrueba;
-
         AdministradorConos generadorConos;
 
         private Escenografia.Plano _plane { get; set; }
@@ -109,11 +107,12 @@ namespace TGC.MonoGame.TP
             terreno = new Terreno();
 
             Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
-            AyudanteSimulacion.agregarCuerpoStatico(_simulacion,new RigidPose(Vector3.Zero.ToNumerics()),
-                                    _simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(200,200,200)));
+            StaticHandle handler = AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Zero.ToNumerics()),
+                                    _simulacion.Shapes.Add(new Sphere(100f)));
+            Console.WriteLine(_simulacion.Statics.Count + " : " + _simulacion.Statics.GetStaticReference(handler).Pose.Position);
             
             jugador = new JugadorColisionable();
-            jugador.setForma(new Vector3(100,100,100) * 5, new Vector3(100,100,100) * -5, Vector3.Forward * 1500);
+            jugador.setForma(-new Vector3(100,100,100) , new Vector3(100,100,100) , Vector3.Backward * 1500);
             base.Initialize();
         }
 

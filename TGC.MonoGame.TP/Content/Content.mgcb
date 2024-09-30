@@ -25,6 +25,13 @@
 /processorParam:DebugMode=Auto
 /build:Effects/BoxShader.fx
 
+#begin Effects/debugFont.spritefont
+/importer:FontDescriptionImporter
+/processor:LocalizedFontProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Effects/debugFont.spritefont
+
 #begin Effects/VehicleShader.fx
 /importer:EffectImporter
 /processor:EffectProcessor

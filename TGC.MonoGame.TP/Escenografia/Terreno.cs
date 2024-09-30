@@ -25,7 +25,7 @@ namespace Escenografia
         /// <param name="content">El ContentManager del juego.</param>
         /// <param name="alturaMaxima">Altura máxima del terreno basado en el heightmap.</param>
         /// 
-        public void CargarTerreno(string heightMapPath, ContentManager content, float alturaMaxima, BufferPool bufferPool)
+        public void CargarTerreno(string heightMapPath, ContentManager content, float alturaMaxima)
         {
             // Cargar el heightmap como textura
             heightMapTexture = content.Load<Texture2D>(heightMapPath);

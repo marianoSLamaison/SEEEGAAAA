@@ -152,7 +152,7 @@ namespace TGC.MonoGame.TP
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
 
-            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f, bufferPool);
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f);
             terreno.SetEffect(_basicShader);
 
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);

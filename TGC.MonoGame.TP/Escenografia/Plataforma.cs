@@ -20,7 +20,7 @@ namespace Escenografia
         }
         public override Matrix getWorldMatrix()
         {
-            return Matrix.CreateScale(g_scale) * Matrix.CreateRotationY(rotacionY) * Matrix.CreateTranslation(posicion);
+            return Matrix.CreateScale(g_scale*1.6f) * Matrix.CreateRotationY(rotacionY) * Matrix.CreateTranslation(posicion);
         }
 
         public static void setGScale(float scale)

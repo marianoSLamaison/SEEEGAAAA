@@ -28,11 +28,11 @@ namespace Escenografia
         /// Este metodo es virtual, para permitir sobre escribirlo, en caso de que
         /// necesitemos que algun modelo tenga diferentes efectos por mesh
         /// </remarks>
-        virtual public void loadModel(String direcionModelo,
+        virtual public void loadModel(String direccionModelo,
                         String direccionEfecto, ContentManager contManager)
         {
             //asignamos el modelo deseado
-            modelo = contManager.Load<Model>(direcionModelo);
+            modelo = contManager.Load<Model>(direccionModelo);
             //mismo caso para el efecto
             efecto = contManager.Load<Effect>(direccionEfecto);
             //agregamos el efecto deseado a cada parte del modelo
@@ -62,7 +62,7 @@ namespace Escenografia
             // le cargamos el como quedaria projectado en la pantalla
             efecto.Parameters["Projection"].SetValue(projection);
             // le pasamos el color ( repasar esto )
-            efecto.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            efecto.Parameters["DiffuseColor"]?.SetValue(color.ToVector3());
             foreach( ModelMesh mesh in modelo.Meshes)
             {
                 efecto.Parameters["World"].SetValue(mesh.ParentBone.Transform * getWorldMatrix());

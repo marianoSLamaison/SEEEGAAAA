@@ -29,6 +29,7 @@ namespace Escenografia
     abstract class Auto 
     {
         //ralacionadas con movimiento
+
         /// <summary>
         /// Este es el handler del cuerpo, hay mas cosas a demas de la ref a si que nos lo quedamos por si acaso
         /// </summary>
@@ -55,6 +56,13 @@ namespace Escenografia
         protected bool estaSaltando = false;
 
         protected float velocidadVertical = 0f;
+      //esto es lo nuevo
+        protected float altura = 0f;
+        protected const float velocidadSalto = 980f;        //Antes era 500f
+
+        protected const float maximaVelocidadPosible = 500f; //Antes era 2536f;
+
+        protected Box limites;
         protected Vector3 direccion;
 
         protected float rotacionRuedasDelanteras;
@@ -415,16 +423,90 @@ namespace Escenografia
             
                      
         }
-        public void loadJugador(GraphicsDevice graphics, Effect efecto)
+private float duracionTurbo = 0f;  // Variable para controlar la duración del turbo
+private bool turboActivo = false; 
+        public void getInputs(float deltaTime)
         {
-            figuraAsociada.loadPrimitiva(graphics, efecto, Color.Black);
+            if ( !estaSaltando )
+            {
+                //negativo si estamos llendo para atras
+                float velocidadDeGiroDefinitiva;
+                float velocidadDeGiroInstantanea = 0f;
+                if ( Keyboard.GetState().IsKeyDown(Keys.W))
+                    velocidad += aceleracion * deltaTime;
+                else if ( Keyboard.GetState().IsKeyDown(Keys.S))
+                    velocidad -= aceleracion * deltaTime;
+                else 
+                    velocidad *= 0.56f;
+
+                velocidadDeGiroDefinitiva = velocidad >= 0 ? velocidadGiro : -velocidadGiro;
+                if ( Keyboard.GetState().IsKeyDown(Keys.A))
+                    velocidadDeGiroInstantanea +=  velocidadDeGiroDefinitiva * deltaTime;
+                if ( Keyboard.GetState().IsKeyDown(Keys.D))
+                    velocidadDeGiroInstantanea -= velocidadDeGiroDefinitiva * deltaTime;
+                if ( Keyboard.GetState().IsKeyDown(Keys.Space))
+                {
+                    velocidadVertical = velocidadSalto;
+                    estaSaltando = true;
+                }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.T))
+                {
+                Turbo turbo = new Turbo();
+                RecogerPowerUp(turbo);
+                }
+
+                rotacionRuedasDelanteras += velocidadDeGiroInstantanea * (velocidad >= 0 ? 1 : -1);
+                //necesito una explicacion de esto despues
+                float escalarDeDerrape = Math.Abs(velocidad / maximaVelocidadPosible);
+                //limitamos el giro de las ruedas
+                rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
+                //si estamos moviendonos, aplicamos rotacion al auto
+                if(velocidad >0.0001f || velocidad < -0.0001f)
+                {
+                    rotacionY += velocidadDeGiroInstantanea * escalarDeDerrape;
+                    revolucionDeRuedas += ((float)Math.PI / 2) *deltaTime;
+                }
+                //reducimos por un 2% su giro
+                rotacionRuedasDelanteras *= 0.98f;
+                
+            } else {
+                if (altura == 0)
+                {
+                    estaSaltando = false;
+                }
+            }
+            mover(deltaTime);
+
+        //public void loadJugador(GraphicsDevice graphics, Effect efecto)
+        //{
+        //    figuraAsociada.loadPrimitiva(graphics, efecto, Color.Black);
+
         }
         
         public void mover(float deltaTime)
         {
-            getInputs(deltaTime);
+
+            const float G = -980.5f;            //Antes era -500.5f
+            velocidadVertical += G * deltaTime ;
+            altura += velocidadVertical * deltaTime;
+            altura = Math.Clamp(altura, 0, limites.maxVertice.Y);
+            posicion += Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY)) * velocidad * deltaTime;
+            posicion.Y = altura;
+            posicion = Utils.Matematicas.clampV(posicion, limites.minVertice, limites.maxVertice);
+            //limitamos la rotacion para que no ocurra que te quedas girando en un lado por siempre
+            rotacionY = Convert.ToSingle(Utils.Matematicas.wrapf(rotacionY, 0, Math.Tau));
         }
-    }
+
+        
+        public void RecogerPowerUp(PowerUp powerUp)
+        {
+        powerUp.ActivarPowerUp(this);   
+       }
+}
+
+    
+
     class AutoNPC : Auto
     {
         public override void dibujar(Matrix view, Matrix projection, Color color)

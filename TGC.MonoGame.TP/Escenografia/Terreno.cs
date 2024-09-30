@@ -15,6 +15,10 @@ namespace Escenografia
         private VertexPosition[] vertices;
         private int[] indices;
         private Texture2D heightMapTexture;
+        private Texture2D terrenoTextureDiffuse;
+        private Texture2D terrenoTextureNormal;
+        private Texture2D terrenoTextureHeight;
+
         private float[,] heightData;
         private int width, height;
 
@@ -29,6 +33,9 @@ namespace Escenografia
         {
             // Cargar el heightmap como textura
             heightMapTexture = content.Load<Texture2D>(heightMapPath);
+            terrenoTextureDiffuse = content.Load<Texture2D>("Models/Terreno/"+"diffuseColor");
+            terrenoTextureHeight = content.Load<Texture2D>("Models/Terreno/"+"OrangeRockTexture");
+            terrenoTextureNormal = content.Load<Texture2D>("Models/Terreno/"+"normal");
             width = heightMapTexture.Width;
             height = heightMapTexture.Height;
 
@@ -53,6 +60,11 @@ namespace Escenografia
 
         public void SetEffect (Effect effect){
             this.efecto = effect;
+        }
+
+              public void ApplyTexturesToShader()
+        {
+            efecto.Parameters["TerrenoTexture"].SetValue(heightMapTexture);
         }
 
         /// <summary>
@@ -162,7 +174,7 @@ namespace Escenografia
         {
             efecto.Parameters["View"].SetValue(view);
             efecto.Parameters["Projection"].SetValue(projection);
-            efecto.Parameters["DiffuseColor"].SetValue(color.ToVector3());
+            efecto.Parameters["DiffuseColor"]?.SetValue(color.ToVector3());
 
             efecto.Parameters["World"].SetValue(getWorldMatrix());
 

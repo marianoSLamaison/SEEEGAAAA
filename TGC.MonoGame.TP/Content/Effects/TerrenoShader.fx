@@ -15,17 +15,18 @@ float4x4 Projection;
 float3 CameraPosition;
 
 // Texturas
-texture BoxTexture;
 
+
+texture TerrenoTexture;
 // Sampler para las texturas
 SamplerState SamplerType
 {
-    texture = (BoxTexture);
+    texture = (TerrenoTexture);
     magfilter = LINEAR;
     minfilter = LINEAR;
     mipfilter = LINEAR;
-    AddressU = Mirror;
-    AddressV = Mirror;
+    AddressU = Wrap;
+    AddressV = Wrap;
 };
 
 
@@ -45,7 +46,7 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-
+    
     float4 worldPosition = mul(input.Position, World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
@@ -64,7 +65,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR
 }
 
 // Técnica
-technique BoxTechnique
+technique TerrenoTechnique
 {
     pass Pass1
     {

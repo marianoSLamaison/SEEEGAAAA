@@ -32,7 +32,7 @@ namespace TGC.MonoGame.TP
         
         private Effect _basicShader;
         private Effect _vehicleShader;
-        private Effect _boxShader;
+        private Effect _terrenoShader;
         
         private Simulation _simulacion;
 
@@ -51,6 +51,9 @@ namespace TGC.MonoGame.TP
         private AdminUtileria Escenario;
         Primitiva Colisionable1;
         private Escenografia.Plataforma _plataforma { get; set;}
+
+        private Turbo turboPowerUp;
+        
 
         private BepuPhysics.Collidables.Box _box {get; set;}
         private PrismaRectangularEditable _boxVisual {get; set;}
@@ -145,12 +148,14 @@ namespace TGC.MonoGame.TP
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
+            _terrenoShader = Content.Load<Effect>(ContentFolderEffects + "TerrenoShader");
             _plane.SetEffect(_basicShader);
             
-            Plataforma.setGScale(10f);
+            Plataforma.setGScale(15f);
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
+
 
             terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f);
             terreno.SetEffect(_basicShader);

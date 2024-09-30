@@ -15,12 +15,14 @@ float4x4 Projection;
 float3 CameraPosition;
 
 // Texturas
-texture BoxTexture;
 
+
+texture BlueRockTexture;
+texture MountainRockTexture;
 // Sampler para las texturas
 SamplerState SamplerType
 {
-    texture = (BoxTexture);
+    texture = (BlueRockTexture);
     magfilter = LINEAR;
     minfilter = LINEAR;
     mipfilter = LINEAR;
@@ -64,7 +66,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR
 }
 
 // Técnica
-technique BoxTechnique
+technique PlatformTechnique
 {
     pass Pass1
     {

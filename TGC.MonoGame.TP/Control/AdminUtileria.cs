@@ -23,7 +23,7 @@ namespace Control
         private Escenografia.Plataforma plataforma4;
         public AdminUtileria(Vector3 minLims, Vector3 maxLims)
         {
-            limites = new Escenografia.Box(minLims, maxLims);
+            limites = new Escenografia.LimBox(minLims, maxLims);
             Vector3 dimensiones = maxLims - minLims;
             objetosFijos = new List<Escenografia.Escenografia3D>
             {

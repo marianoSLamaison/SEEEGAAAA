@@ -148,7 +148,7 @@ namespace TGC.MonoGame.TP
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
-            _terrenoShader = Content.Load<Effect>(ContentFolderEffects + "TerrenoShader");
+            _terrenoShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _plane.SetEffect(_basicShader);
             
             Plataforma.setGScale(15f);
@@ -197,7 +197,7 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
             
-            auto.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            auto.Mover(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.Posicion);
             _simulacion.Timestep(1f/60f);//por ahora corre en el mismo thread que todo lo demas

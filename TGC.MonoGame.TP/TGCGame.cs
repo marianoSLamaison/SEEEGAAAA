@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
+using BepuPhysics;
+using BepuPhysics.Collidables;
+using BepuPhysics.Constraints.Contact;
+using BepuUtilities.Memory;
 using Control;
 using Escenografia;
 using Microsoft.Xna.Framework;
@@ -38,7 +42,8 @@ namespace TGC.MonoGame.TP
 
         AdministradorConos generadorConos;
 
-        
+        private Simulation _simulacion;
+
         Escenografia.Primitiva cuadrado;
 
 
@@ -55,6 +60,13 @@ namespace TGC.MonoGame.TP
 
         private AdminUtileria Escenario;
         private Escenografia.Plataforma _plataforma { get; set;}
+
+        private BepuPhysics.Collidables.Box _box {get; set;}
+        private PrismaRectangularEditable _boxVisual {get; set;}
+        private BepuPhysics.Collidables.Box _hitboxAuto {get; set;}
+
+        Primitiva Colisionable1;
+        private BufferPool bufferPool;
 
 
         /// <summary>
@@ -94,13 +106,22 @@ namespace TGC.MonoGame.TP
             generadorConos = new AdministradorConos();
             generadorConos.generarConos(Vector3.Zero, 16000f, 200);
 
-            auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
+            auto = new Escenografia.AutoJugador(new Vector3(0,2000,0), Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
 
             terreno = new Terreno();
+
+            bufferPool = new BufferPool();
+
+            _simulacion = Simulation.Create(bufferPool, 
+                                            new AyudanteSimulacion.NarrowPhaseCallbacks(), 
+                                            new AyudanteSimulacion.PoseIntegratorCallbacks(Vector3.Down.ToNumerics() * 200f),
+                                            new SolveDescription(60,1));
+
+            AyudanteSimulacion.simulacion = _simulacion;
 
             //_plant = new Model(GraphicsDevice, );
             //_edificio = new PrismaRectangularEditable(GraphicsDevice, new Vector3(200f, 500f, 200f));
@@ -141,14 +162,16 @@ namespace TGC.MonoGame.TP
             //generadorPrueba.loadModelosAutos(modelos, efectos, Content);
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
 
-            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f, bufferPool);
             terreno.SetEffect(_basicShader);
             
             //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
 
             //_cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
             //_cono.SetScale(20f);
+            Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
 
+            Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
             //_edificio.SetEffect(_basicShader);
 
             //_rampa.SetEffect(_basicShader);
@@ -162,6 +185,24 @@ namespace TGC.MonoGame.TP
             //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
             //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
             //_palmera.SetScale(0.5f);
+
+            _box = new BepuPhysics.Collidables.Box(200f,200f,200f);
+            
+            
+            _hitboxAuto = new BepuPhysics.Collidables.Box(200f, 100f, 500f);
+
+            TypedIndex figuraCaja = _simulacion.Shapes.Add(_box);
+            TypedIndex figuraPlano =_simulacion.Shapes.Add(new BepuPhysics.Collidables.Box(30000f, 1f, 30000f));
+            TypedIndex figuraAuto = _simulacion.Shapes.Add(_hitboxAuto);
+
+            auto.referenciaAFigura = figuraAuto;
+
+            AyudanteSimulacion.agregarCuerpoEstatico(_simulacion, new RigidPose(new Vector3(0f,0f,-500f).ToNumerics()), figuraCaja);
+            //AyudanteSimulacion.agregarCuerpoEstatico(_simulacion, new RigidPose(new Vector3(0f,-200f,0f).ToNumerics()), figuraPlano);
+
+            AyudanteSimulacion.agregarCuerpoDinamico(new RigidPose(new Vector3(0f,2000f,0f).ToNumerics()), 1f, figuraAuto, 0.01f);
+            
+            terreno.CrearCollider(bufferPool, _simulacion);
 
 
             base.LoadContent();
@@ -177,7 +218,9 @@ namespace TGC.MonoGame.TP
                 //Salgo del juego.
                 Exit();
             }
-            auto.mover(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            auto.moverConFisicas(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+
+            _simulacion.Timestep(1f/60f);
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.posicion);
             //camara.getInputs(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
@@ -197,6 +240,8 @@ namespace TGC.MonoGame.TP
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
+
+            Colisionable1.dibujar(camarografo, new Vector3(0, 0, -500).ToNumerics());
             
             //_plant.Draw(camarografo.getWorldMatrix(), camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
             

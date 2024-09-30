@@ -9,7 +9,7 @@ namespace Control
 {
     class AdminUtileria
     {
-        Escenografia.Box limites;
+        Escenografia.LimBox limites;
         private List<Escenografia.Escenografia3D> objetosFijos;
 
         private Texture2D texturePlataforma1;

@@ -4,6 +4,8 @@ using Control;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using BepuPhysics;
+using BepuPhysics.Collidables;
 using System;
 
 namespace Escenografia

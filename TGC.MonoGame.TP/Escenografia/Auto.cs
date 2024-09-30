@@ -2,11 +2,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
-using BepuPhysics.Collidables;
 using BepuPhysics;
+using BepuPhysics.Collidables;
 using Control;
+using Escenografia;
 using System;
+using System.Collections.Generic;
 
 
 namespace Escenografia
@@ -121,6 +122,7 @@ namespace Escenografia
         /// deberias estar apretanto atras, para revertir el movimiento
         /// </summary>
         float comportamientoDeVelocidad;
+        public TypedIndex referenciaAFigura;
 
         public AutoJugador(Vector3 direccion, float velocidadGiro, float fuerzaDireccional)
         {
@@ -185,7 +187,7 @@ namespace Escenografia
                 //para no tener el problema de estar girando por siempre a un mismo lado
                 RotUp = Convert.ToSingle(Math.Clamp(RotUp, -Math.PI, MathF.PI));
                 //solo nos interesa rotar si nos movemos, de otra forma solo rotamos ruedas
-                if ( refACuerpo.Velocity.Linear.LengthSquared() != 0 )
+                if ( refACuerpo.Velocity.Linear.LengthSquared() > 1f )
                 {
                     RotUp *= 0.98f;
                     refACuerpo.Velocity.Angular = orientacion.Up.ToNumerics() * RotUp;
@@ -311,7 +313,69 @@ namespace Escenografia
                 mesh.Draw();    
             }
         }
+        
+        /*public void moverConFisicas(float deltaTime)
+        {
+            // Obtiene el cuerpo de Bepu
+            BodyReference referenciaACuerpo = AyudanteSimulacion.simulacion.Bodies.GetBodyReference(cuerpoAsociado);
+            System.Numerics.Vector3 pos = referenciaACuerpo.Pose.Position;
+            posicion = new Vector3(pos.X, pos.Y, pos.Z);
+            referenciaACuerpo.Activity.SleepThreshold = -1f; // Evitar que se duerma
+            referenciaACuerpo.Activity.SleepCandidate = false;
 
+            // Variables de impulso y velocidad de giro ajustadas
+            float velocidadMovimiento = 100f; // Ajusta esta magnitud si es necesario
+            float velocidadGiro = 0.02f;   // Ajusta la velocidad de giro
+
+            // Calcular la rotación de la dirección basándote en rotacionY
+
+            velocidad = referenciaACuerpo.Velocity.Linear.Length();
+            bool haciaAtras;
+
+            // Aplicar movimiento hacia adelante y hacia atrás
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                //referenciaACuerpo.Velocity.Linear += Vector3.Normalize(Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY))).ToNumerics() * velocidadMovimiento;
+                referenciaACuerpo.ApplyLinearImpulse(Vector3.Normalize(Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY))).ToNumerics() * velocidadMovimiento);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                //referenciaACuerpo.Velocity.Linear -= Vector3.Normalize(Vector3.Transform(direccion, Matrix.CreateRotationY(rotacionY))).ToNumerics() * (velocidadMovimiento * 0.1f);
+                referenciaACuerpo.ApplyLinearImpulse(Vector3.Normalize(Vector3.Transform(-direccion, Matrix.CreateRotationY(rotacionY))).ToNumerics() * velocidadMovimiento * 0.5f);
+                haciaAtras = true;
+            }
+            if(Keyboard.GetState().IsKeyDown(Keys.Space)){
+                referenciaACuerpo.ApplyLinearImpulse(Vector3.Up.ToNumerics()*velocidadMovimiento);
+            }
+            else 
+            {
+                referenciaACuerpo.Velocity.Linear *= 0.96f;
+                haciaAtras = false;
+            }
+
+            if ( Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                //rotacionY += (velocidad >= 0 ? velocidadGiro : -velocidadGiro) * deltaTime;
+                rotacionRuedasDelanteras += velocidadGiro;
+            }
+            if ( Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                //rotacionY += (velocidad >= 0 ? -velocidadGiro : velocidadGiro) * deltaTime;
+                rotacionRuedasDelanteras -= velocidadGiro;
+            }
+
+            rotacionX += velocidad * 0.001f;
+            
+            float escalarDeDerrape = Math.Clamp(velocidad * 0.000025f, 0.0001f, 0.05f);
+
+            if(velocidad >= 1f){
+                rotacionY += rotacionRuedasDelanteras * escalarDeDerrape; // Gira normalmente
+                referenciaACuerpo.ApplyAngularImpulse(Vector3.UnitY.ToNumerics() * rotacionY * escalarDeDerrape);
+            }
+            
+            rotacionRuedasDelanteras = (float)Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4, Math.PI/4);
+            rotacionRuedasDelanteras *= 0.98f;
+        }*/
     }
 
     class JugadorColisionable 

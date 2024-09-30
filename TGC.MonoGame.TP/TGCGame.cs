@@ -1,6 +1,7 @@
 ﻿using System;
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using BepuUtilities.Memory;
 using Control;
 using Escenografia;
 using Microsoft.Xna.Framework;
@@ -40,6 +41,9 @@ namespace TGC.MonoGame.TP
         Escenografia.AutoJugador auto;
         AdministradorConos generadorConos;
 
+        //Escenografia.Primitiva cuadrado;
+
+
         private Escenografia.Plano _plane { get; set; }
         
         private Terreno terreno;
@@ -47,6 +51,11 @@ namespace TGC.MonoGame.TP
         private AdminUtileria Escenario;
         Primitiva Colisionable1;
         private Escenografia.Plataforma _plataforma { get; set;}
+
+        private BepuPhysics.Collidables.Box _box {get; set;}
+        private PrismaRectangularEditable _boxVisual {get; set;}
+        private BepuPhysics.Collidables.Box _hitboxAuto {get; set;}
+        private BufferPool bufferPool;
 
 
         /// <summary>
@@ -76,7 +85,9 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState; 
 
-            _simulacion = Simulation.Create(new BepuUtilities.Memory.BufferPool(), 
+            bufferPool= new BufferPool();
+
+            _simulacion = Simulation.Create(bufferPool, 
                                             new Control.AyudanteSimulacion.NarrowPhaseCallbacks(), 
                                             new Control.AyudanteSimulacion.PoseIntegratorCallbacks(new Vector3(0f, -1000f, 0f).ToNumerics()),
                                             new SolveDescription(5,1));
@@ -93,7 +104,7 @@ namespace TGC.MonoGame.TP
             auto.darCuerpo(handlerDeCuerpo);
 
             Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
-            AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Zero.ToNumerics()),
+            AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitZ.ToNumerics() * -500f),
                                     _simulacion.Shapes.Add(new Sphere(100f)));
 
            var Piso = new Box(1000000, 1, 1000000);
@@ -141,11 +152,32 @@ namespace TGC.MonoGame.TP
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
 
-            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f, bufferPool);
             terreno.SetEffect(_basicShader);
 
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
             Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
+            
+            //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
+
+            //_cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
+            //_cono.SetScale(20f);
+            //_edificio.SetEffect(_basicShader);
+
+            //_rampa.SetEffect(_basicShader);
+            //_rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
+
+            //_cilindro.SetEffect(_basicShader);
+            //_cilindro.SetPosition(new Vector3(1000f,0f,2000f));
+            //_cilindro.SetScale(100f);
+            //_cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
+
+            //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
+            //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
+            //_palmera.SetScale(0.5f);
+            
+            terreno.CrearCollider(bufferPool, _simulacion);
+
 
             base.LoadContent();
         }
@@ -178,8 +210,9 @@ namespace TGC.MonoGame.TP
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
+
+            Colisionable1.dibujar(camarografo, new Vector3(0, 0, -500).ToNumerics());
             
-            Colisionable1.dibujar(camarografo, Vector3.Zero.ToNumerics());
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
             
 

@@ -1,13 +1,18 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using BepuPhysics;
+using Control;
+using Escenografia;
+using BepuPhysics.Collidables;
 using System;
+using BepuUtilities.Memory;
 
 namespace Escenografia
 {
     public class Terreno : Escenografia3D
     {
-        private VertexPositionNormalTexture[] vertices;
+        private VertexPosition[] vertices;
         private int[] indices;
         private Texture2D heightMapTexture;
         private float[,] heightData;
@@ -20,7 +25,7 @@ namespace Escenografia
         /// <param name="content">El ContentManager del juego.</param>
         /// <param name="alturaMaxima">Altura máxima del terreno basado en el heightmap.</param>
         /// 
-        public void CargarTerreno(string heightMapPath, ContentManager content, float alturaMaxima)
+        public void CargarTerreno(string heightMapPath, ContentManager content, float alturaMaxima, BufferPool bufferPool)
         {
             // Cargar el heightmap como textura
             heightMapTexture = content.Load<Texture2D>(heightMapPath);
@@ -55,14 +60,14 @@ namespace Escenografia
         /// </summary>
         private void GenerarVertices()
         {
-            vertices = new VertexPositionNormalTexture[width * height];
+            vertices = new VertexPosition[width * height];
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     Vector3 posicion = new Vector3(x, heightData[x, y], y);
-                    Vector2 texCoord = new Vector2((float)x / (width - 1), (float)y / (height - 1));
-                    vertices[x + y * width] = new VertexPositionNormalTexture(posicion, Vector3.Up, texCoord);
+                    //Vector2 texCoord = new Vector2((float)x / (width - 1), (float)y / (height - 1));
+                    vertices[x + y * width] = new VertexPosition(posicion);
                 }
             }
 
@@ -94,14 +99,57 @@ namespace Escenografia
             }
         }
 
+        public void CrearCollider(BufferPool bufferPool, Simulation simulation)
+        {
+            // Extraer solo las posiciones de los vértices para el colisionador.
+            var posiciones = new System.Numerics.Vector3[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                posiciones[i] = new System.Numerics.Vector3(vertices[i].Position.X, vertices[i].Position.Y, vertices[i].Position.Z);
+            }
+
+            // Crear el colisionador usando StaticMesh.
+            var terrenoCollider = new Mesh(CrearBufferDeTriangulos(bufferPool), Vector3.One.ToNumerics() * 40f, bufferPool);
+            var figuraTerreno = simulation.Shapes.Add(terrenoCollider);
+
+            // Agregar el colisionador a la simulación.
+            AyudanteSimulacion.agregarCuerpoEstatico(simulation, new RigidPose(new Vector3(0f,0,0f).ToNumerics()), figuraTerreno);
+        }
+
+        public Buffer<Triangle> CrearBufferDeTriangulos(BufferPool bufferPool)
+        {
+            // Crear un buffer para almacenar los triángulos, el tamaño es la cantidad de triángulos
+            bufferPool.Take<Triangle>(indices.Length / 3, out var triangulos);
+
+            // Crear triángulos a partir de los índices
+            for (int i = 0; i < indices.Length; i += 3)
+            {
+                // Obtener los índices de los vértices
+                int index0 = indices[i];
+                int index1 = indices[i + 1];
+                int index2 = indices[i + 2];
+
+                // Crear un triángulo usando los vértices correspondientes
+                Triangle triangle = new Triangle(
+                    new System.Numerics.Vector3(vertices[index0].Position.X, vertices[index0].Position.Y, vertices[index0].Position.Z),
+                    new System.Numerics.Vector3(vertices[index1].Position.X, vertices[index1].Position.Y, vertices[index1].Position.Z),
+                    new System.Numerics.Vector3(vertices[index2].Position.X, vertices[index2].Position.Y, vertices[index2].Position.Z)
+                );
+
+                // Agregar el triángulo al buffer
+                triangulos[i / 3] = triangle;
+            }
+            return triangulos;
+        }
+
         /// <summary>
         /// Devuelve la matriz de transformación mundial del terreno.
         /// </summary>
         public override Matrix getWorldMatrix()
         {
             return
-                Matrix.CreateTranslation(posicion - new Vector3 (250f, 12.5f, 250f)) *
-                Matrix.CreateScale(45f) *
+                Matrix.CreateTranslation(posicion) *
+                Matrix.CreateScale(40f) *
                 Matrix.CreateRotationX(rotacionX) *
                 Matrix.CreateRotationY(rotacionY) *
                 Matrix.CreateRotationZ(rotacionZ);

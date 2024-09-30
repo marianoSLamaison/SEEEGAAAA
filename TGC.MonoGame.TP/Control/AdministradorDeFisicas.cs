@@ -232,6 +232,11 @@ namespace Control
         {
             return simulacion.Bodies.GetBodyReference(handler);
         }
+        public static void agregarCuerpoEstatico(Simulation simulacion, RigidPose pose, TypedIndex figura)
+        {
+            //TODO: ver si tenemos que usar para algo el retorno de esta cosa
+            simulacion.Statics.Add(new StaticDescription(pose,figura));
+        }
 
         //las figuras se declaran por fuera por que no tengo tiempo de ver como hacerlo mas de una
         public static BodyHandle agregarCuerpoDinamico(RigidPose pose,

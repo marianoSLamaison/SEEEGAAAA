@@ -86,7 +86,7 @@ namespace TGC.MonoGame.TP
 
 
 
-            auto = new Escenografia.AutoJugador( Vector3.Backward,Convert.ToSingle(Math.PI)/3f, 15f);
+            auto = new Escenografia.AutoJugador( Vector3.Backward,Convert.ToSingle(Math.PI)/2f, 15f);
             //seteamos una figura para el auto
             Box figuraAuto = new BepuPhysics.Collidables.Box(500f, 500f, 500f);
             TypedIndex referenciaAFigura = _simulacion.Shapes.Add(figuraAuto);

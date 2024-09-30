@@ -30,7 +30,6 @@ namespace TGC.MonoGame.TP
         
         private Effect _basicShader;
         private Effect _vehicleShader;
-
         private Effect _vehicleCombatShader;
         private Effect _terrenoShader;
         
@@ -39,21 +38,15 @@ namespace TGC.MonoGame.TP
         Control.Camarografo camarografo;
         Escenografia.AutoJugador auto;
 
-        Escenografia.CombatVehicle combatVehicle;
         Control.AdministradorNPCs generadorPrueba;
-
         AdministradorConos generadorConos;
-
         AdministradorNPCs generadorCombatVehicleNPC;
 
-        
+    
         Escenografia.Primitiva cuadrado;
-
-
         private Escenografia.Plano _plane { get; set; }
         
         private Terreno terreno;
-
         private AdminUtileria Escenario;
         private Escenografia.Plataforma _plataforma { get; set;}
 
@@ -93,7 +86,6 @@ namespace TGC.MonoGame.TP
 
             auto = new Escenografia.AutoJugador(Vector3.Zero, Vector3.Backward, 1000f, Convert.ToSingle(Math.PI)/3f);
             auto.setLimites(-new Vector3(1f,1f,1f)*10000f, new Vector3(1f,1f,1f)*10000f);
-            //combatVehicle = new Escenografia.CombatVehicle(new Vector3(1f,0f,1f)*2000, Vector3.Backward, 1000f,Convert.ToSingle(Math.PI)/3f);
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
@@ -109,7 +101,6 @@ namespace TGC.MonoGame.TP
             String[] modelos = {ContentFolder3D + "Auto/RacingCar"};
             String[] efectos = {ContentFolderEffects + "BasicShader"};
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
-            generadorCombatVehicleNPC.loadCombatVehicles(ContentFolder3D + "CombatVehicle/Vehicle", ContentFolderEffects + "VehicleCombatShader", Content);
 
             cuadrado = Escenografia.Primitiva.RegPoligon(Vector3.Zero, 32, 1f);
 
@@ -123,15 +114,10 @@ namespace TGC.MonoGame.TP
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
             
             generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-            
-            generadorCombatVehicleNPC.loadModelNPC(ContentFolder3D+"CombatVehicle/Vehicle",ContentFolderEffects+"VehicleCombatShader", Content);
+            generadorCombatVehicleNPC.loadCombatVehicles(ContentFolder3D + "CombatVehicle/Vehicle", ContentFolderEffects + "VehicleCombatShader", Content);
 
-            //terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
-            //terreno.SetEffect(_basicShader);
-            /*Intento crear una variante de terreno con textura que no sea un sólo color.  Modificar en Terreno.dibujar() el Diffuse.*/
-            terreno.CargarTerreno(ContentFolder3D+"Terreno/OrangeRockTexture", Content, 200f);
-            terreno.SetEffect(_terrenoShader);
-            
+            terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 20f);
+            terreno.SetEffect(_basicShader);
 
             base.LoadContent();
         }
@@ -159,13 +145,10 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(Color.LightBlue);
 
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
-            //combatVehicle.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
             Escenario.Dibujar(camarografo);
             
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
-
             generadorCombatVehicleNPC.drawCombatModel(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
-
             terreno.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.DarkGray);
             
             Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;

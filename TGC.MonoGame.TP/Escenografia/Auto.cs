@@ -142,59 +142,69 @@ namespace Escenografia
         /// </summary>
         public void getInputs(float deltaTime)
         {
-            float vAngularInst = velocidadAngular * deltaTime;
-            float velocidadGRuedas = vAngularInst * 2.00f;//es solo un poco mas rapida que el giro del auto
-            //si estamos en la 
-            float sentidoMov = comportamientoDeVelocidad > 0 ? 1 : -1;
-            //estas estan dedicadas a incrementar la fuerza con la que se mueve el auto
-            //aparentemente nuestro auto esta mirando hacia atras a si que estan puestos asi
-            
-            //Uso la orientacion para tener cubierto el temita de que posiblemente
-            //los choques con otros autos puedan alterar la rotacion del modelo durante la partida
-
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if ( !estaSaltando )
             {
-                comportamientoDeVelocidad += 1f;
-                refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * 15f;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.S))
-            {
-                comportamientoDeVelocidad += -1f;
-                refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * -15f;
-            }
-            else
-            {
-                refACuerpo.Velocity.Linear *= 0.96f;
-                comportamientoDeVelocidad *= 0.96f;
-            }
-            //Estas dos estan dedicadas a inclinar el auto
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                rotacionRuedasDelanteras += velocidadGRuedas;
-                RotUp += vAngularInst * sentidoMov;
-            }
-            else if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                rotacionRuedasDelanteras -= velocidadGRuedas;
-                RotUp -= vAngularInst * sentidoMov;
-            }
-            //evitamos que las ruedas den una vuelta entera
-            rotacionRuedasDelanteras = Convert.ToSingle(Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4f, Math.PI/4f));
-            //para no tener el problema de estar girando por siempre a un mismo lado
-            RotUp = Convert.ToSingle(Math.Clamp(RotUp, -Math.PI, MathF.PI));
-            //solo nos interesa rotar si nos movemos, de otra forma solo rotamos ruedas
-            if ( refACuerpo.Velocity.Linear.LengthSquared() != 0 )
-            {
-                RotUp *= 0.98f;
-                refACuerpo.Velocity.Angular = orientacion.Up.ToNumerics() * RotUp;
-                revolucionDeRuedas += vAngularInst;
-            }
+                float vAngularInst = velocidadAngular * deltaTime;
+                float velocidadGRuedas = vAngularInst * 2.00f;//es solo un poco mas rapida que el giro del auto
+                //si estamos en la 
+                float sentidoMov = comportamientoDeVelocidad > 0 ? 1 : -1;
+                //estas estan dedicadas a incrementar la fuerza con la que se mueve el auto
+                //aparentemente nuestro auto esta mirando hacia atras a si que estan puestos asi
                 
-            rotacionRuedasDelanteras *= 0.96f;
-            //Esto nos bloqueara el movimiento cuando estemos en el aire, y agregara un impulso desde abajo
-            //Esto queda de tarea para el que tenia que hacer el piso
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                ;
+                //Uso la orientacion para tener cubierto el temita de que posiblemente
+                //los choques con otros autos puedan alterar la rotacion del modelo durante la partida
+
+                if (Keyboard.GetState().IsKeyDown(Keys.W))
+                {
+                    comportamientoDeVelocidad += 1f;
+                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * 15f;
+                }
+                else if (Keyboard.GetState().IsKeyDown(Keys.S))
+                {
+                    comportamientoDeVelocidad += -1f;
+                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * -15f;
+                }
+                else
+                {
+                    refACuerpo.Velocity.Linear *= 0.96f;
+                    comportamientoDeVelocidad *= 0.96f;
+                }
+                //Estas dos estan dedicadas a inclinar el auto
+                if (Keyboard.GetState().IsKeyDown(Keys.A))
+                {
+                    rotacionRuedasDelanteras += velocidadGRuedas;
+                    RotUp += vAngularInst * sentidoMov;
+                }
+                else if (Keyboard.GetState().IsKeyDown(Keys.D))
+                {
+                    rotacionRuedasDelanteras -= velocidadGRuedas;
+                    RotUp -= vAngularInst * sentidoMov;
+                }
+                //evitamos que las ruedas den una vuelta entera
+                rotacionRuedasDelanteras = Convert.ToSingle(Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4f, Math.PI/4f));
+                //para no tener el problema de estar girando por siempre a un mismo lado
+                RotUp = Convert.ToSingle(Math.Clamp(RotUp, -Math.PI, MathF.PI));
+                //solo nos interesa rotar si nos movemos, de otra forma solo rotamos ruedas
+                if ( refACuerpo.Velocity.Linear.LengthSquared() != 0 )
+                {
+                    RotUp *= 0.98f;
+                    refACuerpo.Velocity.Angular = orientacion.Up.ToNumerics() * RotUp;
+                    revolucionDeRuedas += vAngularInst;
+                }
+                    
+                rotacionRuedasDelanteras *= 0.96f;
+                //Esto nos bloqueara el movimiento cuando estemos en el aire, y agregara un impulso desde abajo
+                //Esto queda de tarea para el que tenia que hacer el piso
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) && !estaSaltando )
+                {
+                    estaSaltando = true;
+                    refACuerpo.Velocity.Linear += new System.Numerics.Vector3(0f, 1000f, 0f);
+                }
+            } else {
+                if ( refACuerpo.Velocity.Linear.Y < 0.5f)
+                    estaSaltando = false;
+            }
+
             
         }
 

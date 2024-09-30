@@ -106,7 +106,7 @@ namespace Control
                 //For the purposes of this demo, we'll use the same settings for all pairs.
                 //(Note that there's no 'bounciness' or 'coefficient of restitution' property!
                 //Bounciness is handled through the contact spring settings instead. Setting See here for more details: https://github.com/bepu/bepuphysics2/issues/3 and check out the BouncinessDemo for some options.)
-                pairMaterial.FrictionCoefficient = 1f;//setea un coeficiente de friccion
+                pairMaterial.FrictionCoefficient = 0.7f;//setea un coeficiente de friccion
                 pairMaterial.MaximumRecoveryVelocity = 2f;//limita la velocidad maxima
                 pairMaterial.SpringSettings = new SpringSettings(30, 1);//para rebote
                 //For the purposes of the demo, contact constraints are always generated.

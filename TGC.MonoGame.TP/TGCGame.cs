@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using Control;
@@ -79,7 +78,7 @@ namespace TGC.MonoGame.TP
 
             _simulacion = Simulation.Create(new BepuUtilities.Memory.BufferPool(), 
                                             new Control.AyudanteSimulacion.NarrowPhaseCallbacks(), 
-                                            new Control.AyudanteSimulacion.PoseIntegratorCallbacks(Vector3.Zero.ToNumerics()),
+                                            new Control.AyudanteSimulacion.PoseIntegratorCallbacks(new Vector3(0f, -1000f, 0f).ToNumerics()),
                                             new SolveDescription(5,1));
 
             AyudanteSimulacion.simulacion = _simulacion;
@@ -88,16 +87,30 @@ namespace TGC.MonoGame.TP
 
             auto = new Escenografia.AutoJugador( Vector3.Backward,Convert.ToSingle(Math.PI)/2f, 15f);
             //seteamos una figura para el auto
-            Box figuraAuto = new BepuPhysics.Collidables.Box(500f, 500f, 500f);
+            Box figuraAuto = new BepuPhysics.Collidables.Box(300f, 250f, 500f);
             TypedIndex referenciaAFigura = _simulacion.Shapes.Add(figuraAuto);
-            BodyHandle handlerDeCuerpo = AyudanteSimulacion.agregarCuerpoDinamico(new RigidPose(Vector3.Forward.ToNumerics() * 1500f),10f,referenciaAFigura,10f);
+            BodyHandle handlerDeCuerpo = AyudanteSimulacion.agregarCuerpoDinamico(new RigidPose( new Vector3(1f,0.5f,0f).ToNumerics() * 1500f),10f,referenciaAFigura,10f);
             auto.darCuerpo(handlerDeCuerpo);
 
             Colisionable1 = Primitiva.Prisma(new Vector3(100,100,100),- new Vector3(100,100,100));
-            StaticHandle handler = AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Zero.ToNumerics()),
+            AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Zero.ToNumerics()),
                                     _simulacion.Shapes.Add(new Sphere(100f)));
 
-
+           var Piso = new Box(1000000, 1, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(new Vector3(0f, -1f, 0f).ToNumerics()), _simulacion.Shapes.Add(Piso));
+           var Pared1 = new Box(1, 1000000, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Right.ToNumerics()*10000), _simulacion.Shapes.Add(Pared1));
+           var Pared2 = new Box(1, 1000000, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Left.ToNumerics()*10000), _simulacion.Shapes.Add(Pared2));
+           var Pared3 = new Box(1000000, 1000000, 1);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Forward.ToNumerics()*10000), _simulacion.Shapes.Add(Pared3));
+           var Pared4 = new Box(1000000, 1000000, 1);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Backward.ToNumerics()*10000), _simulacion.Shapes.Add(Pared4));
 
 
             generadorConos = new AdministradorConos();

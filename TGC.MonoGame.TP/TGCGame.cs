@@ -88,6 +88,7 @@ namespace TGC.MonoGame.TP
 
 
             auto = new Escenografia.AutoJugador( Vector3.Backward,Convert.ToSingle(Math.PI)/2f, 15f);
+            auto.Misil = new Misil();
             //seteamos una figura para el auto
             Box figuraAuto = new BepuPhysics.Collidables.Box(300f, 250f, 500f);
             TypedIndex referenciaAFigura = _simulacion.Shapes.Add(figuraAuto);
@@ -102,7 +103,7 @@ namespace TGC.MonoGame.TP
 
 
             generadorConos = new AdministradorConos();
-            generadorConos.generarConos(Vector3.Zero, 16000f, 200);
+            generadorConos.generarConos(Vector3.Zero, 12000f, 150, 1200f);
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
@@ -137,6 +138,7 @@ namespace TGC.MonoGame.TP
 
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
             Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
+            auto.Misil.loadModel(ContentFolder3D + "Misil/Misil", ContentFolderEffects + "BasicShader", Content);
             
             terreno.CrearCollider(bufferPool, _simulacion, new Vector3(-10000f, 0f, -10000f));
 
@@ -155,6 +157,7 @@ namespace TGC.MonoGame.TP
             }
             
             auto.Mover(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
+            auto.Misil.ActualizarPowerUp(gameTime);
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.Posicion);
             camarografo.GetInputs();
@@ -178,6 +181,7 @@ namespace TGC.MonoGame.TP
             Colisionable1.dibujar(camarografo, new Vector3(0, 0, -500).ToNumerics());
             
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
+            auto.Misil.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.Cyan);
             
             camarografo.DrawDatos(SpriteBatch);
 

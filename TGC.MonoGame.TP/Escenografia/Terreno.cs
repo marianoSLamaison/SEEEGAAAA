@@ -120,7 +120,6 @@ namespace Escenografia
                 posiciones[i] = new System.Numerics.Vector3(vertices[i].Position.X, vertices[i].Position.Y, vertices[i].Position.Z);
             }
 
-            // Crear el colisionador usando StaticMesh.
             var terrenoCollider = new Mesh(CrearBufferDeTriangulos(bufferPool), Vector3.One.ToNumerics() * 40f, bufferPool);
             var figuraTerreno = simulation.Shapes.Add(terrenoCollider);
 

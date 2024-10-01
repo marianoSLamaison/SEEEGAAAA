@@ -87,45 +87,150 @@ namespace Control
         }
     }
 */
-    public class AdministradorConos{
+    public class AdministradorConos
+    {
         static Random RNG = new Random();
         List<Cono> conos;
+        float alturaConos = 320f; // Altura fija para todos los conos
 
-        public void generarConos(Vector3 centro, float radio, int numeroNPCs)
+        public void generarConos(Vector3 centro, float radio, int numeroNPCs, float distanciaMinima)
         {
-            float distanciaCentro, anguloDesdeCentro;
-            Vector3 puntoPlano;
             conos = new List<Cono>(numeroNPCs);
-            Cono holder;
-            for ( int i=0; i< numeroNPCs; i++)
+            List<Vector2> puntosPoisson = GenerarPuntosPoissonDisk(radio, distanciaMinima, numeroNPCs);
+
+            // Convertir puntos 2D (XZ) en puntos 3D con altura fija en Y
+            foreach (var punto in puntosPoisson)
             {
-                distanciaCentro = (float)(Math.Clamp(RNG.NextDouble() + 0.05f, 0.05f, 1f) * radio);
-                anguloDesdeCentro = (float)(RNG.NextDouble() * Math.Tau);
-                puntoPlano = Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(anguloDesdeCentro)) * distanciaCentro;
-                //Console.WriteLine(distanciaCentro);
-                holder = new Cono(puntoPlano + centro);
-                //Console.WriteLine(holder.getWorldMatrix());
-                conos.Add(holder);
+                Vector3 puntoPlano = new Vector3(punto.X, alturaConos, punto.Y);
+                Cono nuevoCono = new Cono(puntoPlano + centro);
+                conos.Add(nuevoCono);
             }
         }
-        public void loadModelosConos(String direccionesModelos, String direccionesEfectos, ContentManager content)
+
+        /// <summary>
+        /// Genera puntos usando Poisson Disk Sampling en 2D (plano XZ).
+        /// </summary>
+        /// <param name="radio">Radio máximo del área.</param>
+        /// <param name="distanciaMinima">Distancia mínima entre conos.</param>
+        /// <param name="numeroNPCs">Número máximo de conos a generar.</param>
+        /// <returns>Lista de puntos 2D en el plano XZ.</returns>
+        private List<Vector2> GenerarPuntosPoissonDisk(float radio, float distanciaMinima, int numeroNPCs)
         {
-            //cargamos todos los modelos al azar
-            foreach( Cono cono in conos)
+            // Configuración inicial del algoritmo de Poisson Disk Sampling
+            float cellSize = distanciaMinima / (float)Math.Sqrt(2);
+            int gridSize = (int)Math.Ceiling(2 * radio / cellSize);
+            Vector2?[,] grid = new Vector2?[gridSize, gridSize];
+            List<Vector2> puntos = new List<Vector2>();
+            List<Vector2> activos = new List<Vector2>();
+
+            // Generar el primer punto aleatorio en el círculo
+            Vector2 primerPunto = RNGDentroDeCirculo(radio);
+            puntos.Add(primerPunto);
+            activos.Add(primerPunto);
+
+            int gridX = (int)((primerPunto.X + radio) / cellSize);
+            int gridY = (int)((primerPunto.Y + radio) / cellSize);
+            grid[gridX, gridY] = primerPunto;
+
+            while (activos.Count > 0 && puntos.Count < numeroNPCs)
             {
-                Random rangen = new Random();
-                
-                cono.loadModel(direccionesModelos,
-                direccionesEfectos,content);
+                int indiceAleatorio = RNG.Next(activos.Count);
+                Vector2 puntoActivo = activos[indiceAleatorio];
+                bool puntoEncontrado = false;
+
+                // Intentar generar nuevos puntos alrededor del activo
+                for (int i = 0; i < 30; i++)
+                {
+                    Vector2 nuevoPunto = GenerarPuntoAleatorio(puntoActivo, distanciaMinima);
+
+                    if (EsPuntoValido(nuevoPunto, grid, gridSize, cellSize, distanciaMinima, radio))
+                    {
+                        puntos.Add(nuevoPunto);
+                        activos.Add(nuevoPunto);
+
+                        int nuevoGridX = (int)((nuevoPunto.X + radio) / cellSize);
+                        int nuevoGridY = (int)((nuevoPunto.Y + radio) / cellSize);
+                        grid[nuevoGridX, nuevoGridY] = nuevoPunto;
+
+                        puntoEncontrado = true;
+                        break;
+                    }
+                }
+
+                if (!puntoEncontrado)
+                {
+                    activos.RemoveAt(indiceAleatorio);
+                }
+            }
+
+            return puntos;
+        }
+
+        private Vector2 GenerarPuntoAleatorio(Vector2 centro, float distanciaMinima)
+        {
+            float radioAleatorio = distanciaMinima * (1 + (float)RNG.NextDouble());
+            float anguloAleatorio = (float)(RNG.NextDouble() * 2 * Math.PI);
+
+            float nuevoX = centro.X + radioAleatorio * (float)Math.Cos(anguloAleatorio);
+            float nuevoY = centro.Y + radioAleatorio * (float)Math.Sin(anguloAleatorio);
+
+            return new Vector2(nuevoX, nuevoY);
+        }
+
+        private bool EsPuntoValido(Vector2 punto, Vector2?[,] grid, int gridSize, float cellSize, float distanciaMinima, float radio)
+        {
+            // Verificar que el punto está dentro del círculo
+            if (punto.Length() > radio)
+                return false;
+
+            int gridX = (int)((punto.X + radio) / cellSize);
+            int gridY = (int)((punto.Y + radio) / cellSize);
+
+            if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize)
+                return false;
+
+            // Verificar las celdas vecinas
+            for (int x = Math.Max(0, gridX - 2); x <= Math.Min(gridSize - 1, gridX + 2); x++)
+            {
+                for (int y = Math.Max(0, gridY - 2); y <= Math.Min(gridSize - 1, gridY + 2); y++)
+                {
+                    if (grid[x, y] != null)
+                    {
+                        float distancia = Vector2.Distance(punto, grid[x, y].Value);
+                        if (distancia < distanciaMinima)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private Vector2 RNGDentroDeCirculo(float radio)
+        {
+            float angulo = (float)(RNG.NextDouble() * Math.PI * 2);
+            float distancia = (float)(RNG.NextDouble() * radio);
+            return new Vector2(distancia * (float)Math.Cos(angulo), distancia * (float)Math.Sin(angulo));
+        }
+
+        public void loadModelosConos(string direccionesModelos, string direccionesEfectos, ContentManager content)
+        {
+            // Cargar modelos de conos
+            foreach (Cono cono in conos)
+            {
+                cono.loadModel(direccionesModelos, direccionesEfectos, content);
             }
         }
-        public void drawConos(Matrix view, Matrix projeccion)
+
+        public void drawConos(Matrix view, Matrix projection)
         {
-            
-            foreach( Cono cono in conos )
+            // Dibujar todos los conos
+            foreach (Cono cono in conos)
             {
-                cono.SetScale(20f);
-                cono.dibujar(view, projeccion, Color.Orange);
+                cono.SetScale(20f); // Ajustar escala de los conos
+                cono.dibujar(view, projection, Color.Orange);
             }
         }
     }

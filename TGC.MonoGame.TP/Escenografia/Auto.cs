@@ -133,6 +133,9 @@ namespace Escenografia
         /// </summary>
         float comportamientoDeVelocidad;
         public TypedIndex referenciaAFigura;
+        public float escalarDeVelocidad = 15f;
+
+        public Misil Misil;
 
         public AutoJugador(Vector3 direccion, float velocidadGiro, float fuerzaDireccional)
         {
@@ -176,12 +179,12 @@ namespace Escenografia
                 if (Keyboard.GetState().IsKeyDown(Keys.W))
                 {
                     comportamientoDeVelocidad += 1f;
-                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * 15f;
+                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * escalarDeVelocidad;
                 }
                 else if (Keyboard.GetState().IsKeyDown(Keys.S))
                 {
                     comportamientoDeVelocidad += -1f;
-                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * -15f;
+                    refACuerpo.Velocity.Linear += orientacion.Backward.ToNumerics() * -escalarDeVelocidad;
                 }
                 else
                 {
@@ -204,6 +207,10 @@ namespace Escenografia
                 {
                     Turbo turbo = new Turbo();
                     RecogerPowerUp(turbo);
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.M))
+                {
+                    RecogerPowerUp(Misil);
                 }
                 //evitamos que las ruedas den una vuelta entera
                 rotacionRuedasDelanteras = Convert.ToSingle(Math.Clamp(rotacionRuedasDelanteras, -Math.PI/4f, Math.PI/4f));

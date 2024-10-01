@@ -213,7 +213,8 @@ namespace Escenografia
                 if ( refACuerpo.Velocity.Linear.LengthSquared() > 1f )
                 {
                     RotUp *= 0.98f;
-                    refACuerpo.Velocity.Angular = orientacion.Up.ToNumerics() * RotUp;
+                    refACuerpo.Velocity.Angular *= 0.98f;
+                    refACuerpo.Velocity.Angular += orientacion.Up.ToNumerics() * RotUp * 1/60f;
                     revolucionDeRuedas += vAngularInst;
                 }
                     

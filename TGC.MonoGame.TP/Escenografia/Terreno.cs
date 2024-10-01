@@ -111,7 +111,7 @@ namespace Escenografia
             }
         }
 
-        public void CrearCollider(BufferPool bufferPool, Simulation simulation)
+        public void CrearCollider(BufferPool bufferPool, Simulation simulation, Vector3 posicion)
         {
             // Extraer solo las posiciones de los vértices para el colisionador.
             var posiciones = new System.Numerics.Vector3[vertices.Length];
@@ -125,7 +125,9 @@ namespace Escenografia
             var figuraTerreno = simulation.Shapes.Add(terrenoCollider);
 
             // Agregar el colisionador a la simulación.
-            AyudanteSimulacion.agregarCuerpoEstatico(simulation, new RigidPose(new Vector3(0f,0,0f).ToNumerics()), figuraTerreno);
+            //le damos una posicion 
+            this.posicion = posicion;
+            AyudanteSimulacion.agregarCuerpoEstatico(simulation, new RigidPose(posicion.ToNumerics()), figuraTerreno);
         }
 
         public Buffer<Triangle> CrearBufferDeTriangulos(BufferPool bufferPool)
@@ -160,11 +162,11 @@ namespace Escenografia
         public override Matrix getWorldMatrix()
         {
             return
-                Matrix.CreateTranslation(posicion) *
-                Matrix.CreateScale(40f) *
                 Matrix.CreateRotationX(rotacionX) *
                 Matrix.CreateRotationY(rotacionY) *
-                Matrix.CreateRotationZ(rotacionZ);
+                Matrix.CreateRotationZ(rotacionZ) * 
+                Matrix.CreateScale(40f) *
+                Matrix.CreateTranslation(posicion);
         }
 
         /// <summary>

@@ -28,38 +28,26 @@ namespace TGC.MonoGame.TP
 
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
-
-        
         private Effect _basicShader;
         private Effect _vehicleShader;
         private Effect _terrenoShader;
-        
         private Simulation _simulacion;
-
         //Control.Camera camara;
         Control.Camarografo camarografo;
         Escenografia.AutoJugador auto;
         AdministradorConos generadorConos;
 
-        //Escenografia.Primitiva cuadrado;
-
-
         private Escenografia.Plano _plane { get; set; }
-        
-        private Terreno terreno;
-
         private AdminUtileria Escenario;
         Primitiva Colisionable1;
         private Escenografia.Plataforma _plataforma { get; set;}
-
         private Turbo turboPowerUp;
-        
-
         private BepuPhysics.Collidables.Box _box {get; set;}
         private PrismaRectangularEditable _boxVisual {get; set;}
         private BepuPhysics.Collidables.Box _hitboxAuto {get; set;}
         private BufferPool bufferPool;
 
+        private Terreno terreno;
 
         /// <summary>
         ///     Constructor del juego.
@@ -110,21 +98,7 @@ namespace TGC.MonoGame.TP
             AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitZ.ToNumerics() * -500f),
                                     _simulacion.Shapes.Add(new Sphere(100f)));
 
-           var Piso = new Box(1000000, 1, 1000000);
-           // Add the plane to the simulation
-           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(new Vector3(0f, -1f, 0f).ToNumerics()), _simulacion.Shapes.Add(Piso));
-           var Pared1 = new Box(1, 1000000, 1000000);
-           // Add the plane to the simulation
-           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Right.ToNumerics()*10000), _simulacion.Shapes.Add(Pared1));
-           var Pared2 = new Box(1, 1000000, 1000000);
-           // Add the plane to the simulation
-           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Left.ToNumerics()*10000), _simulacion.Shapes.Add(Pared2));
-           var Pared3 = new Box(1000000, 1000000, 1);
-           // Add the plane to the simulation
-           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Forward.ToNumerics()*10000), _simulacion.Shapes.Add(Pared3));
-           var Pared4 = new Box(1000000, 1000000, 1);
-           // Add the plane to the simulation
-           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.Backward.ToNumerics()*10000), _simulacion.Shapes.Add(Pared4));
+            AyudanteSimulacion.SetScenario();
 
 
             generadorConos = new AdministradorConos();
@@ -132,8 +106,8 @@ namespace TGC.MonoGame.TP
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
-            terreno = new Terreno();
 
+            terreno = new Terreno();
             
             base.Initialize();
         }
@@ -145,6 +119,7 @@ namespace TGC.MonoGame.TP
             String[] modelos = {ContentFolder3D + "Auto/RacingCar"};
             String[] efectos = {ContentFolderEffects + "BasicShader"};
             
+            camarografo.loadTextFont(ContentFolderEffects, Content);
 
             _basicShader = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             _vehicleShader = Content.Load<Effect>(ContentFolderEffects + "VehicleShader");
@@ -163,25 +138,7 @@ namespace TGC.MonoGame.TP
             auto.loadModel(ContentFolder3D + "Auto/RacingCar", ContentFolderEffects + "VehicleShader", Content);
             Colisionable1.loadPrimitiva(Graphics.GraphicsDevice, _basicShader, Color.DarkCyan);
             
-            //_plant = Content.Load<Model>(ContentFolder3D + "Plant/indoor plant_02_fbx/plant");
-
-            //_cono.loadModel(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-            //_cono.SetScale(20f);
-            //_edificio.SetEffect(_basicShader);
-
-            //_rampa.SetEffect(_basicShader);
-            //_rampa.SetRotacion(0f,0f,Convert.ToSingle(Math.PI/2));
-
-            //_cilindro.SetEffect(_basicShader);
-            //_cilindro.SetPosition(new Vector3(1000f,0f,2000f));
-            //_cilindro.SetScale(100f);
-            //_cilindro.SetRotacion(0, Convert.ToSingle(Math.PI/2), Convert.ToSingle(Math.PI/2));
-
-            //_palmera.loadModel(ContentFolder3D + "Palmera/palmera2", ContentFolderEffects + "BasicShader", Content);
-            //_palmera.SetPosition(new Vector3(1500f, 0f, 1000f));
-            //_palmera.SetScale(0.5f);
-            
-            terreno.CrearCollider(bufferPool, _simulacion);
+            terreno.CrearCollider(bufferPool, _simulacion, new Vector3(-10000f, 0f, -10000f));
 
 
             base.LoadContent();
@@ -200,6 +157,7 @@ namespace TGC.MonoGame.TP
             auto.Mover(Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds));
             //para que el camarografo nos siga siempre
             camarografo.setPuntoAtencion(auto.Posicion);
+            camarografo.GetInputs();
             _simulacion.Timestep(1f/60f);//por ahora corre en el mismo thread que todo lo demas
             base.Update(gameTime);
         }
@@ -211,6 +169,7 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(Color.LightBlue);
 
             Escenario.Dibujar(camarografo);
+
             
             generadorConos.drawConos(camarografo.getViewMatrix(), camarografo.getProjectionMatrix());
 
@@ -220,6 +179,7 @@ namespace TGC.MonoGame.TP
             
             auto.dibujar(camarografo.getViewMatrix(), camarografo.getProjectionMatrix(), Color.White);
             
+            camarografo.DrawDatos(SpriteBatch);
 
             Timer += ((float)gameTime.TotalGameTime.TotalSeconds) % 1f;
 

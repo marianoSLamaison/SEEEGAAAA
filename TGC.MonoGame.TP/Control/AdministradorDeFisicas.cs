@@ -101,6 +101,38 @@ namespace Control
             {
                 //The IContactManifold parameter includes functions for accessing contact data regardless of what the underlying type of the manifold is.
                 //If you want to have direct access to the underlying type, you can use the manifold.Convex property and a cast like Unsafe.As<TManifold, ConvexContactManifold or NonconvexContactManifold>(ref manifold).
+                //nos aseguramos de poner los elementos a los que no podemos aplicarles impulsos al final, si es que hay
+                if ( pair.A.Mobility == CollidableMobility.Dynamic && pair.B.Mobility == CollidableMobility.Dynamic )
+                {//si todos son dinamicos, solo calculamos todo
+                    //Datos de el impacto
+                    Vector3 offset, normal;float dept; int id;
+                    manifold.GetContact(0, out offset, out normal, out dept, out id);
+                    //objetos involucrados
+                    BodyReference cuerpo1 = simulacion.Bodies.GetBodyReference(pair.A.BodyHandle);
+                    BodyReference cuerpo2 = simulacion.Bodies.GetBodyReference(pair.B.BodyHandle);
+
+                    Vector3 vectorRot = Vector3.Cross(cuerpo1.Pose.Position - offset, Vector3.UnitY) * 100f;
+                    cuerpo1.ApplyAngularImpulse(vectorRot);
+                    cuerpo2.ApplyAngularImpulse(-vectorRot);
+                }else if ( pair.A.Mobility == CollidableMobility.Dynamic || pair.B.Mobility == CollidableMobility.Dynamic ){
+                    if ( pair.A.Mobility != CollidableMobility.Dynamic)
+                    {
+                        var swaper = pair.A;
+                        pair.A = pair.B;
+                        pair.B = swaper;
+                    }
+                    //Datos de el impacto
+                    Vector3 offset, normal;float dept; int id;
+                    manifold.GetContact(0, out offset, out normal, out dept, out id);
+                    BodyReference cuerpo1 = simulacion.Bodies.GetBodyReference(pair.A.BodyHandle);
+                    
+                    //cuerpo1.Velocity.Angular += Vector3.Cross((Vector3.Normalize(cuerpo1.Pose.Position - offset)), Vector3.UnitY) * 1/60f;
+                    
+                    //por algun motivo esto no funciona
+                    //cuerpo1.ApplyAngularImpulse(Vector3.Cross((Vector3.Normalize(cuerpo1.Pose.Position - offset)), Vector3.UnitY) * 1000000000f);
+                    
+                }
+
 
                 //The engine does not define any per-body material properties. Instead, all material lookup and blending operations are handled by the callbacks.
                 //For the purposes of this demo, we'll use the same settings for all pairs.
@@ -109,6 +141,10 @@ namespace Control
                 pairMaterial.FrictionCoefficient = 0.7f;//setea un coeficiente de friccion
                 pairMaterial.MaximumRecoveryVelocity = 2f;//limita la velocidad maxima
                 pairMaterial.SpringSettings = new SpringSettings(30, 1);//para rebote
+
+                
+
+
                 //For the purposes of the demo, contact constraints are always generated.
                 return true;
             }
@@ -252,6 +288,24 @@ namespace Control
             return CuerpoAsociado;
         }
 
+        public static void SetScenario()
+        {
+            var Piso = new Box(1000000, 1, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(new Vector3(0f, -1f, 0f)), simulacion.Shapes.Add(Piso));
+           var Pared1 = new Box(1, 1000000, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitX*10000), simulacion.Shapes.Add(Pared1));
+           var Pared2 = new Box(1, 1000000, 1000000);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitX*-10000), simulacion.Shapes.Add(Pared2));
+           var Pared3 = new Box(1000000, 1000000, 1);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitZ*10000), simulacion.Shapes.Add(Pared3));
+           var Pared4 = new Box(1000000, 1000000, 1);
+           // Add the plane to the simulation
+           AyudanteSimulacion.agregarCuerpoStatico(new RigidPose(Vector3.UnitZ*-10000), simulacion.Shapes.Add(Pared4));
+        }
         public static void AplicarFuerzaLineal( Vector3 fuerzaLineal, BodyHandle handlerDeCuerpo)
         {
             BodyReference referenciaACuerpo = simulacion.Bodies.GetBodyReference(handlerDeCuerpo);

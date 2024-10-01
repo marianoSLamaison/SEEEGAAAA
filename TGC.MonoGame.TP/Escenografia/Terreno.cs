@@ -62,7 +62,7 @@ namespace Escenografia
             this.efecto = effect;
         }
 
-              public void ApplyTexturesToShader()
+        public void ApplyTexturesToShader()
         {
             efecto.Parameters["TerrenoTexture"].SetValue(heightMapTexture);
         }

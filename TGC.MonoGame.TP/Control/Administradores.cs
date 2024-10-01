@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Timers;
+using BepuPhysics;
+using BepuUtilities.Memory;
 using Escenografia;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -91,7 +93,7 @@ namespace Control
     {
         static Random RNG = new Random();
         List<Cono> conos;
-        float alturaConos = 320f; // Altura fija para todos los conos
+        float alturaConos = 400f; // Altura fija para todos los conos
 
         public void generarConos(Vector3 centro, float radio, int numeroNPCs, float distanciaMinima)
         {
@@ -103,7 +105,9 @@ namespace Control
             {
                 Vector3 puntoPlano = new Vector3(punto.X, alturaConos, punto.Y);
                 Cono nuevoCono = new Cono(puntoPlano + centro);
+                nuevoCono.SetScale(20f); // Ajustar escala de los conos
                 conos.Add(nuevoCono);
+
             }
         }
 
@@ -215,12 +219,13 @@ namespace Control
             return new Vector2(distancia * (float)Math.Cos(angulo), distancia * (float)Math.Sin(angulo));
         }
 
-        public void loadModelosConos(string direccionesModelos, string direccionesEfectos, ContentManager content)
+        public void loadModelosConos(string direccionesModelos, string direccionesEfectos, ContentManager content, BufferPool bufferPool, Simulation simulacion)
         {
             // Cargar modelos de conos
             foreach (Cono cono in conos)
             {
                 cono.loadModel(direccionesModelos, direccionesEfectos, content);
+                cono.CrearCollider(bufferPool, simulacion, cono.posicion);
             }
         }
 
@@ -229,7 +234,6 @@ namespace Control
             // Dibujar todos los conos
             foreach (Cono cono in conos)
             {
-                cono.SetScale(20f); // Ajustar escala de los conos
                 cono.dibujar(view, projection, Color.Orange);
             }
         }

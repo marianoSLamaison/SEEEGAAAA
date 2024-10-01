@@ -103,7 +103,7 @@ namespace TGC.MonoGame.TP
 
 
             generadorConos = new AdministradorConos();
-            generadorConos.generarConos(Vector3.Zero, 12000f, 150, 1200f);
+            generadorConos.generarConos(Vector3.Zero, 11000f, 150, 1100f);
             camarografo = new Control.Camarografo(new Vector3(1f,1f,1f) * 1500f,Vector3.Zero, GraphicsDevice.Viewport.AspectRatio, 1f, 6000f);
             Escenario = new AdminUtileria(-new Vector3(1f,0f,1f)*10000f, new Vector3(1f,0f,1f)*10000f);
             _plane = new Plano(GraphicsDevice, new Vector3(-11000, -200, -11000));
@@ -129,9 +129,6 @@ namespace TGC.MonoGame.TP
             
             Plataforma.setGScale(15f);
             Escenario.loadPlataformas(ContentFolder3D+"Plataforma/Plataforma", ContentFolderEffects + "BasicShader", Content);
-            
-            generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content);
-
 
             terreno.CargarTerreno(ContentFolder3D+"Terreno/height2",Content, 15f);
             terreno.SetEffect(_basicShader);
@@ -141,6 +138,7 @@ namespace TGC.MonoGame.TP
             auto.Misil.loadModel(ContentFolder3D + "Misil/Misil", ContentFolderEffects + "BasicShader", Content);
             
             terreno.CrearCollider(bufferPool, _simulacion, new Vector3(-10000f, 0f, -10000f));
+            generadorConos.loadModelosConos(ContentFolder3D + "Cono/Traffic Cone/Models and Textures/1", ContentFolderEffects + "BasicShader", Content, bufferPool, _simulacion);
 
 
             base.LoadContent();
